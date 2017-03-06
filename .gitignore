@@ -1,0 +1,9 @@
+Src/Efi/BuildInfo.c
+*.o
+*.so
+*.a
+*.efi
+*.efi.debug
+*.signed
+*.p7b
+*.patch

@@ -1,0 +1,40 @@
+This directory contains a pre-built Pkcs7VerifyDxe driver for PKCS#7 signature
+checking used by SELoader.
+
+If your BIOS doesn't support PKCS7 Verify Protocol, put this driver to the
+location where the SELoader is located on ESP. Optionally, you can build
+the driver from the scratch.
+
+Pre-built binary information
+----------------------------
+
+Upstream: git://github.com/tianocore/edk2.git
+Commit: e9429e7997b8e668126d71b8030cc3a96c36a652 
+sha256sum: 506a5605880278f17575729318468efb4c2d802e9cd2cafd7c4bd0dbdd201653 
+
+Build instruction
+-----------------
+
+$ git clone git://github.com/tianocore/edk2.git
+$ cd edk2
+
+Next follow up the instructions found in
+CryptoPkg/Library/OpensslLib/Patch-HOWTO.txt
+
+$ make -C BaseTools/Source/C
+$ vim Conf/target.txt
+Change the configurations as the following:
+TARGET                = RELEASE
+TARGET_ARCH           = X64
+TOOL_CHAIN_TAG        = GCC5
+$ source edksetup.sh
+$ build -DSECURE_BOOT_ENABLE=TRUE -p SecurityPkg/SecurityPkg.dsc
+
+The generated binary is then retrieved at Build/SecurityPkg/RELEASE_GCC5/X64/Pkcs7VerifyDxe.efi.
+
+Sign Pkcs7VerifyDxe.efi
+-----------------------
+If the Pkcs7VerifyDxe.efi driver is necessary, you need to sign it with the
+private key you used to sign the SELoader.
+
+$ sbsign --cert <x509_cert> --key <private_key> Pkcs7VerifyDxe.efi
