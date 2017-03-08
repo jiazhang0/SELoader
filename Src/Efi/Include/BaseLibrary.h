@@ -49,7 +49,7 @@ VOID *
 MemSet(VOID *Destination, UINT8 Value, UINTN Length);
 
 VOID *
-MemDup(VOID *Source, UINTN Length);
+MemDup(CONST VOID *Source, UINTN Length);
 
 #ifndef GNU_EFI
 CHAR16 *

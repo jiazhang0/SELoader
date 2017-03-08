@@ -31,7 +31,7 @@
 #include <BaseLibrary.h>
 
 VOID *
-MemDup(VOID *Source, UINTN Length)
+MemDup(CONST VOID *Source, UINTN Length)
 {
 	VOID *Destination;
 	EFI_STATUS Status = EfiMemoryAllocate(Length, &Destination);
