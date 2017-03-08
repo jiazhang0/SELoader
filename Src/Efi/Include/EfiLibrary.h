@@ -46,6 +46,9 @@ extern EFI_CONTEXT *EfiContext;
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable);
 
+VOID
+EfiLibraryHexDump(CONST CHAR16 *Prompt, UINT8 *Data, UINTN DataSize);
+
 EFI_STATUS
 EfiMemoryAllocate(IN UINTN Size, OUT VOID **AllocatedBuffer);
 

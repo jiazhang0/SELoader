@@ -197,10 +197,7 @@ Pkcs7Verify(VOID *Data, UINTN DataSize,
 		EfiConsolePrintDebug(L"Succeeded to verify PKCS#7 "
 				     L"signature\n");
 
-		EfiConsolePrintDebug(L"Signed data extracted: "); 
-		for (UINTN Index = 0; Index < DigestSize; ++Index)
-			EfiConsolePrintDebug(L"%02x", Digest[Index]);
-		EfiConsolePrintDebug(L"\n");
+		EfiLibraryHexDump(L"Signed data extracted", Digest, DigestSize);
 	} else
 		EfiConsolePrintDebug(L"Failed to verify PKCS#7 signature "
 				     L"(err: 0x%x)\n", Status); 
