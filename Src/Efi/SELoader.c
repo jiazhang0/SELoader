@@ -34,7 +34,7 @@ LoadConfig(VOID)
 {
 	VOID *Config;
 	UINTN ConfigSize;
-	EFI_STATUS Status = EfiFileLoad(L"SELoader.cfg", &Config,
+	EFI_STATUS Status = EfiFileLoad(L"SELoader.conf", &Config,
 					&ConfigSize);
 	
 	/*
