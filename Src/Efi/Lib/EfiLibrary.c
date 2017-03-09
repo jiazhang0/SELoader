@@ -77,6 +77,5 @@ EfiLibraryHexDump(CONST CHAR16 *Prompt, UINT8 *Data, UINTN DataSize)
 	for (UINTN Index = 0; Index < DataSize; ++Index)
 		EfiConsolePrintDebug(L"%02x", Data[Index]);
 
-	if (Prompt)
-		EfiConsolePrintDebug(L"\n");
+	EfiConsolePrintDebug(L"\n");
 }
