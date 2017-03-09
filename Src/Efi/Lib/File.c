@@ -68,8 +68,8 @@ VerifyFileBuffer(VOID *Buffer, UINTN BufferSize, CONST CHAR16 *Path)
 	if (EFI_ERROR(Status))
 		return Status;
 
-	Status = SelSecureBootVerifyBuffer(Buffer, BufferSize,
-					   Signature, SignatureSize);
+	Status = EfiSignatureVerify(Signature, SignatureSize, Buffer,
+				    BufferSize);
 	EfiMemoryFree(Signature);
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintError(L"Succeeded to verify %s\n",

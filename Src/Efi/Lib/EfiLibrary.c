@@ -56,6 +56,10 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	if (EFI_ERROR(Status))
 		EfiMemoryFree(Context);
 
+	Status = EfiDevicePathRootDirectory(&Context->RootDirectory);
+	if (EFI_ERROR(Status))
+		EfiMemoryFree(Context);
+
 	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
 
 	EfiConsolePrintLevel Level;

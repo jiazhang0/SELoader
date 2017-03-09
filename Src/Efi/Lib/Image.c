@@ -145,7 +145,7 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 	EfiConsolePrintDebug(L"The signed data file %s loaded\n",
 			     Path);
 
-	Status = Pkcs7Verify(Data, DataSize, Signature, SignatureSize);
+	Status = Pkcs7Verify(Data, DataSize, Signature, SignatureSize, TRUE);
 	EfiMemoryFree(Signature);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to verify the file %s\n",

@@ -93,10 +93,3 @@ Err:
 
 	return Status;
 }
-
-EFI_STATUS
-SelSecureBootVerifyBuffer(UINT8 *Data, UINTN DataSize,
-			  UINT8 *Signature, UINTN SignatureSize)
-{
-	return Pkcs7Verify(Data, DataSize, Signature, SignatureSize);
-}

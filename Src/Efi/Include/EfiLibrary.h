@@ -39,6 +39,7 @@ typedef struct {
 	EFI_SYSTEM_TABLE *SystemTable;
 	EFI_HANDLE LoaderImage;
 	EFI_HANDLE LoaderDevice;
+	CHAR16 *RootDirectory;
 } EFI_CONTEXT;
 
 extern EFI_CONTEXT *EfiContext;
@@ -60,6 +61,10 @@ EfiProtocolOpen(EFI_HANDLE Handle, CONST EFI_GUID *Protocol, VOID **Interface);
 
 EFI_STATUS
 EfiProtocolLocate(CONST EFI_GUID *Protocol, VOID **Interface);
+
+EFI_STATUS
+EfiProtocolLocateHandles(CONST EFI_GUID *Protocol, EFI_HANDLE **HandleBuffer,
+			 UINTN *Handles);
 
 EFI_STATUS
 EfiDeviceLocate(EFI_HANDLE *DeviceHandle);
@@ -166,6 +171,9 @@ EfiVariableDeleteSel(CONST CHAR16 *VariableName)
 EFI_STATUS
 EfiDevicePathCreate(CONST CHAR16 *Path, CHAR16 **FilePath);
 
+EFI_STATUS
+EfiDevicePathRootDirectory(CHAR16 **DirectoryPath);
+
 typedef enum {
 	EFI_CPL_DEBUG,
 	EFI_CPL_INFO,
@@ -251,25 +259,33 @@ EFI_STATUS
 SelSecureBootMode(UINT8 *SelSecureBoot);
 
 EFI_STATUS
-SelSecureBootVerifyBuffer(UINT8 *Data, UINTN DataSize,
-			  UINT8 *Signature, UINTN SignatureSize);
+EfiSignatureVerify(VOID *Signature, UINTN SignatureSize,
+		   VOID *Data, UINTN DataSize);
 
 typedef struct {
-	EFI_HASH_OUTPUT *Hash;
 	EFI_GUID *HashAlgorithm;
+	VOID *Hash;
 	UINTN HashSize;
 	BOOLEAN Extended;
-} SELOADER_HASH_CONTEXT;
+	UINTN HashedDataSize;
+} EFI_HASH_CONTEXT;
+
+EFI_STATUS
+EfiHashSize(CONST EFI_GUID *HashAlgorithm, UINTN *HashSize);
 
 EFI_STATUS
 EfiHashInitialize(CONST EFI_GUID *HashAlgorithm,
-		  SELOADER_HASH_CONTEXT **Context);
+		  EFI_HASH_CONTEXT *Context);
 
 EFI_STATUS
-EfiHashUpdate(SELOADER_HASH_CONTEXT *Context, CONST UINT8 *Message,
+EfiHashUpdate(EFI_HASH_CONTEXT *Context, CONST UINT8 *Message,
 	      UINTN MessageSize);
 
 EFI_STATUS
-EfiHashFinalize(SELOADER_HASH_CONTEXT *Context, UINT8 **Hash, UINTN *HashSize);
+EfiHashFinalize(EFI_HASH_CONTEXT *Context, UINT8 **Hash, UINTN *HashSize);
+
+EFI_STATUS
+EfiHashData(CONST EFI_GUID *HashAlgorithm, CONST UINT8 *Message,
+	    UINTN MessageSize, UINT8 **Hash, UINTN *HashSize);
 
 #endif	/* EFI_LIBRARY_H */

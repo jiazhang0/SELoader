@@ -13,6 +13,8 @@ OBJS_$(LIB_NAME) := \
 	Console.o \
 	ResetSystem.o \
 	Pkcs7.o \
+	Hash.o \
+	Signature.o \
 	SecurityPolicy.o \
 	UefiSecureBoot.o \
 	MokSecureBoot.o \

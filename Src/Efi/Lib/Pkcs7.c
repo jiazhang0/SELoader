@@ -113,9 +113,113 @@ MergeSignatureList(EFI_SIGNATURE_LIST ***Destination,
 	return EFI_SUCCESS;
 }
 
+STATIC EFI_STATUS
+VerifySignature(VOID *Signature, UINTN SignatureSize,
+		VOID *Data, UINTN DataSize,
+		EFI_SIGNATURE_LIST **AllowedDb,
+		EFI_SIGNATURE_LIST **RevokedDb,
+		EFI_SIGNATURE_LIST **TimeStampDb)
+{
+	UINT8 ExtractedContent[sizeof(EFI_HASH2_OUTPUT)];
+	UINTN SignedContentSize = sizeof(ExtractedContent);
+	UINT8 *SignedContent = ExtractedContent;
+	EFI_PKCS7_VERIFY_BUFFER Verify = Pkcs7VerifyProtocol->VerifyBuffer;
+	EFI_STATUS Status;
+
+	Status = Verify(Pkcs7VerifyProtocol, Signature, SignatureSize,
+			NULL, 0, AllowedDb, RevokedDb, TimeStampDb,
+			SignedContent, &SignedContentSize);
+	if (Status == EFI_BUFFER_TOO_SMALL) {
+		EfiConsolePrintLevel Level;
+
+		Status = EfiConsoleGetVerbosity(&Level);
+		if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG)
+			Status = EfiMemoryAllocate(SignedContentSize,
+						   (VOID **)&SignedContent);
+
+		UINTN *pSize;
+
+		if (!EFI_ERROR(Status))
+			pSize = &SignedContentSize;
+		else {
+			SignedContent = NULL;
+			pSize = NULL;
+		}
+
+		Status = Verify(Pkcs7VerifyProtocol, Signature,
+				SignatureSize, NULL, 0, AllowedDb,
+				RevokedDb, TimeStampDb, SignedContent,
+				pSize);
+	}
+
+	if (!EFI_ERROR(Status)) {
+		if (SignedContent) {
+			EfiLibraryHexDump(L"Signed content extracted",
+					  SignedContent, SignedContentSize);
+
+			if (SignedContent != ExtractedContent)
+				EfiMemoryFree(SignedContent);
+		} else
+			EfiConsolePrintDebug(L"Unable to verify the signed "
+					     L"content in PKCS#7 signature\n");
+
+		if (SignedContentSize != DataSize ||
+		    MemCmp(SignedContent, Data, DataSize)) {
+			EfiConsolePrintError(L"Failed to match PKCS#7 "
+					     L"signature (err: 0x%x)\n",
+					     Status);
+			Status = EFI_ACCESS_DENIED;
+		} else
+			EfiConsolePrintDebug(L"Succeeded to verify PKCS#7 "
+					     L"signature (signed content "
+					     L"%d-byte)\n", SignedContentSize);
+	} else
+		EfiConsolePrintError(L"Failed to verify PKCS#7 signature "
+				     L"(err: 0x%x)\n", Status);
+
+	return Status;
+}
+
+STATIC EFI_STATUS
+VerifyDetachedSignature(VOID *Signature, UINTN SignatureSize,
+			VOID *Data, UINTN DataSize,
+			EFI_SIGNATURE_LIST **AllowedDb,
+			EFI_SIGNATURE_LIST **RevokedDb,
+			EFI_SIGNATURE_LIST **TimeStampDb)
+{
+	EFI_STATUS Status;
+	EFI_PKCS7_VERIFY_BUFFER Verify = Pkcs7VerifyProtocol->VerifyBuffer;
+
+	Status = Verify(Pkcs7VerifyProtocol, Signature, SignatureSize,
+			Data, DataSize, AllowedDb, RevokedDb, TimeStampDb,
+			NULL, NULL);
+
+	/*
+	 * NOTE: Current EDKII-OpenSSL interface cannot support VerifySignature
+	 * directly. EFI_UNSUPPORTED is always returned.
+	 */
+#if 0
+	Status = Pkcs7VerifyProtocol->VerifySignature(Pkcs7VerifyProtocol,
+						      Signature,
+						      SignatureSize,
+						      Data, DataSize,
+						      AllowedDb,
+						      RevokedDb,
+						      TimeStampDb);
+#endif
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"Succeeded to verify detached PKCS#7 "
+				     L"signature\n");
+	else
+		EfiConsolePrintError(L"Failed to verify detached PKCS#7 "
+				     L"signature (err: 0x%x)\n", Status);
+
+	return Status;
+}
+
 EFI_STATUS
-Pkcs7Verify(VOID *Data, UINTN DataSize,
-	    VOID *Signature, UINTN SignatureSize)
+Pkcs7Verify(VOID *Data, UINTN DataSize, VOID *Signature, UINTN SignatureSize,
+	    BOOLEAN DetachedSignature)
 {
 	EFI_STATUS Status;
 
@@ -186,21 +290,16 @@ Pkcs7Verify(VOID *Data, UINTN DataSize,
 
 	/* TODO: Support Dbt */
         EFI_SIGNATURE_LIST *TimeStampDb[1] = { NULL };
-	UINT8 Digest[32];
-	UINTN DigestSize = sizeof(Digest);
-	Status = Pkcs7VerifyProtocol->VerifyBuffer(Pkcs7VerifyProtocol,
-						   Signature, SignatureSize,
-						   NULL, 0, AllowedDb,
-						   RevokedDb, TimeStampDb,
-						   Digest, &DigestSize);
-	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Succeeded to verify PKCS#7 "
-				     L"signature\n");
 
-		EfiLibraryHexDump(L"Signed data extracted", Digest, DigestSize);
-	} else
-		EfiConsolePrintDebug(L"Failed to verify PKCS#7 signature "
-				     L"(err: 0x%x)\n", Status); 
+	if (DetachedSignature == TRUE)
+		Status = VerifyDetachedSignature(Signature, SignatureSize,
+						 Data, DataSize,
+						 AllowedDb, RevokedDb,
+						 TimeStampDb);
+	else
+		Status = VerifySignature(Signature, SignatureSize, Data,
+					 DataSize, AllowedDb, RevokedDb,
+					 TimeStampDb);
 
 	EfiMemoryFree(RevokedDb);
 

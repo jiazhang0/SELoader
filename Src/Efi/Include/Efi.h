@@ -38,6 +38,8 @@
 #include <Edk2/Protocol/SimpleTextIn.h>
 #include <Edk2/Protocol/LoadedImage.h>
 #include <Edk2/Protocol/SimpleFileSystem.h>
+#include <Edk2/Protocol/ServiceBinding.h>
+#include <Edk2/Protocol/Hash2.h>
 #include <Edk2/Protocol/Hash.h>
 #include <Edk2/Protocol/Pkcs7Verify.h>
 
