@@ -50,3 +50,14 @@ EfiProtocolLocate(CONST EFI_GUID *Protocol, VOID **Interface)
 	return EfiContext->BootServices->LocateProtocol((EFI_GUID *)Protocol,
 							NULL, Interface);
 }
+
+EFI_STATUS
+EfiProtocolLocateHandles(CONST EFI_GUID *Protocol, EFI_HANDLE **HandleBuffer,
+			 UINTN *Handles)
+{
+	EFI_LOCATE_HANDLE_BUFFER Locate;
+
+	Locate = EfiContext->BootServices->LocateHandleBuffer;
+	return Locate(ByProtocol, (EFI_GUID *)Protocol, NULL,
+		      Handles, HandleBuffer);
+}
