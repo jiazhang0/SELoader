@@ -74,20 +74,11 @@ DirectoryName(CONST CHAR16 *Path, CHAR16 **Name)
 STATIC EFI_STATUS
 AppendFilePath(CONST CHAR16 *Path, CHAR16 **FilePath)
 {
-	EFI_LOADED_IMAGE *LoadedImage;
-	EFI_STATUS Status = EfiProtocolOpen(EfiContext->LoaderImage,
-					    &gEfiLoadedImageProtocolGuid,
-					    (VOID **)&LoadedImage);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	CHAR16 *LoaderFilePath = DevicePathToStr(LoadedImage->FilePath);
-	if (!LoaderFilePath)
-		return EFI_OUT_OF_RESOURCES;
+	if (!Path || !FilePath)
+		return EFI_INVALID_PARAMETER;
 
 	CHAR16 *DirectoryPath;
-	Status = DirectoryName(LoaderFilePath, &DirectoryPath);
-	EfiMemoryFree(LoaderFilePath);
+	EFI_STATUS Status = EfiDevicePathRootDirectory(&DirectoryPath);
 	if (EFI_ERROR(Status))
 		return Status;
 
@@ -100,6 +91,29 @@ AppendFilePath(CONST CHAR16 *Path, CHAR16 **FilePath)
 	EfiMemoryFree(FilePathPrefix);
 
 	return EFI_SUCCESS;
+}
+
+EFI_STATUS
+EfiDevicePathRootDirectory(CHAR16 **DirectoryPath)
+{
+	if ( !DirectoryPath)
+		return EFI_INVALID_PARAMETER;
+
+	EFI_LOADED_IMAGE *LoadedImage;
+	EFI_STATUS Status = EfiProtocolOpen(EfiContext->LoaderImage,
+					    &gEfiLoadedImageProtocolGuid,
+					    (VOID **)&LoadedImage);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	CHAR16 *LoaderFilePath = DevicePathToStr(LoadedImage->FilePath);
+	if (!LoaderFilePath)
+		return EFI_OUT_OF_RESOURCES;
+
+	Status = DirectoryName(LoaderFilePath, DirectoryPath);
+	EfiMemoryFree(LoaderFilePath);
+
+	return Status;
 }
 
 EFI_STATUS
