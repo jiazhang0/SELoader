@@ -4,6 +4,7 @@ LIB_TARGET := $(LIB_NAME).a
 OBJS_$(LIB_NAME) := \
 	MemCpy.o \
 	MemMove.o \
+	MemCmp.o \
 	MemSet.o \
 	MemDup.o \
 	StrDup.o \

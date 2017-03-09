@@ -48,6 +48,9 @@ MemMove(VOID *Destination, CONST VOID *Source, UINTN MaxLength);
 VOID *
 MemSet(VOID *Destination, UINT8 Value, UINTN Length);
 
+INTN
+MemCmp(CONST VOID *FirstSource, CONST VOID *SecondSource, UINTN MaxLength);
+
 VOID *
 MemDup(CONST VOID *Source, UINTN Length);
 
