@@ -7,3 +7,4 @@ Src/Efi/BuildInfo.c
 *.signed
 *.p7b
 *.patch
+Bak
