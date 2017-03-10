@@ -15,6 +15,7 @@ OBJS_$(LIB_NAME) := \
 	StrnChr.o \
 	StrrChr.o \
 	StrStr.o \
+	StrrStr.o \
 	StrnLen.o \
 	StrStr.o
 
