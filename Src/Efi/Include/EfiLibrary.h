@@ -33,16 +33,9 @@
 #include <MokSecureBoot.h>
 #include <SelSecureBoot.h>
 
-typedef struct {
-	EFI_BOOT_SERVICES *BootServices;
-	EFI_RUNTIME_SERVICES *RuntimeServices;
-	EFI_SYSTEM_TABLE *SystemTable;
-	EFI_HANDLE LoaderImage;
-	EFI_HANDLE LoaderDevice;
-	CHAR16 *RootDirectory;
-} EFI_CONTEXT;
-
-extern EFI_CONTEXT *EfiContext;
+extern EFI_HANDLE gThisImage;
+extern EFI_HANDLE gThisDevice;
+extern CHAR16 *gRootPath;
 
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable);

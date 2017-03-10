@@ -32,6 +32,5 @@
 VOID
 EfiResetSystemWarm(VOID)
 {
-	EfiContext->RuntimeServices->ResetSystem(EfiResetWarm, EFI_SUCCESS,
-						 0, NULL);
+	gRT->ResetSystem(EfiResetWarm, EFI_SUCCESS, 0, NULL);
 }

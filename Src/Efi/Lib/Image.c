@@ -41,7 +41,7 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 	BOOLEAN Unload)
 {
 	EFI_LOADED_IMAGE *LoadedImage;
-	EFI_STATUS Status = EfiProtocolOpen(EfiContext->LoaderImage,
+	EFI_STATUS Status = EfiProtocolOpen(gThisImage,
 					    &gEfiLoadedImageProtocolGuid,
 					    (VOID **)&LoadedImage);
 	if (EFI_ERROR(Status)) {
@@ -68,11 +68,8 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 	}	
 
 	EFI_HANDLE ImageHandle;
-        Status = EfiContext->BootServices->LoadImage(FALSE,
-						     EfiContext->LoaderImage,
- 						     DevicePath, ImageBuffer,
-						     ImageBufferSize,
-						     &ImageHandle);
+        Status = gBS->LoadImage(FALSE, gThisImage, DevicePath, ImageBuffer,
+				ImageBufferSize, &ImageHandle);
 	EfiMemoryFree(DevicePath);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to load the image "
@@ -83,7 +80,7 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 	EfiConsolePrintDebug(L"Preparing to start the image %s ...\n",
 			     Path);
 
-        Status = EfiContext->BootServices->StartImage(ImageHandle, NULL, NULL);
+	Status = gBS->StartImage(ImageHandle, NULL, NULL);
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"Image %s exited\n", Path);
 	else
@@ -91,7 +88,7 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 				     L"%s (err: 0x%x)\n", Path, Status);
 
 	if (Unload == TRUE)
-        	EfiContext->BootServices->UnloadImage(ImageHandle);
+		gBS->UnloadImage(ImageHandle);
 
 	return Status;
 }

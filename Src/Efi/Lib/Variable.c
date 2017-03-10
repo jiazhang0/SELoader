@@ -53,7 +53,7 @@ EfiVariableRead(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 		BufferSize = *DataSize;
 
 	EFI_GET_VARIABLE GetVariable;
-	GetVariable = EfiContext->RuntimeServices->GetVariable;
+	GetVariable = gRT->GetVariable;
 	*DataSize = 0;
 	Status = GetVariable((CHAR16 *)VariableName, (EFI_GUID *)VendorGuid,
 			     Attributes, DataSize, NULL);
@@ -97,10 +97,8 @@ EfiVariableWrite(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 	if (!Data || !DataSize)
 		return EFI_INVALID_PARAMETER;
 
-	return EfiContext->RuntimeServices->SetVariable((CHAR16 *)VariableName,
-							(EFI_GUID *)VendorGuid,
-							Attributes, DataSize,
-							Data);
+	return gRT->SetVariable((CHAR16 *)VariableName, (EFI_GUID *)VendorGuid,
+				Attributes, DataSize, Data);
 }
 
 EFI_STATUS
@@ -114,7 +112,6 @@ EfiVariableDelete(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid)
 	if (EFI_ERROR(Status))
 		return Status;
 
-	return EfiContext->RuntimeServices->SetVariable((CHAR16 *)VariableName,
-							(EFI_GUID *)VendorGuid,
-							Attributes, 0, NULL);
+	return gRT->SetVariable((CHAR16 *)VariableName, (EFI_GUID *)VendorGuid,
+				Attributes, 0, NULL);
 }

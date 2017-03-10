@@ -42,6 +42,8 @@
 #include <Edk2/Protocol/Hash2.h>
 #include <Edk2/Protocol/Hash.h>
 #include <Edk2/Protocol/Pkcs7Verify.h>
+#include <Edk2/Library/UefiBootServicesTableLib.h>
+#include <Edk2/Library/UefiRuntimeServicesTableLib.h>
 
 #ifdef GNU_EFI
 #include <GnuEfi.h>

@@ -36,7 +36,7 @@ EfiDeviceLocate(EFI_HANDLE *DeviceHandle)
 {
 	if (!ParentDeviceHandle) {
 		EFI_LOADED_IMAGE *LoadedImage;
-		EFI_STATUS Status = EfiProtocolOpen(EfiContext->LoaderImage,
+		EFI_STATUS Status = EfiProtocolOpen(gThisImage,
 						    &gEfiLoadedImageProtocolGuid,
 						    (VOID **)&LoadedImage);
 		if (EFI_ERROR(Status)) {

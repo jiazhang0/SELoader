@@ -70,7 +70,7 @@ OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
 	EFI_FILE_IO_INTERFACE *FileSystem;
 	EFI_STATUS Status;
 
-	Status = EfiProtocolOpen(EfiContext->LoaderDevice,
+	Status = EfiProtocolOpen(gThisDevice,
 				 &gEfiSimpleFileSystemProtocolGuid,
 				 (VOID **)&FileSystem);
 	if (EFI_ERROR(Status))

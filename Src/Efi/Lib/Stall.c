@@ -32,7 +32,7 @@
 VOID
 EfiStallMicroseconds(UINTN Microseconds)
 {
-	EfiContext->BootServices->Stall(Microseconds);
+	gBS->Stall(Microseconds);
 }
 
 VOID

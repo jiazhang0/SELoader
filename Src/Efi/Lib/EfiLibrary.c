@@ -29,7 +29,12 @@
 #include <Efi.h>
 #include <EfiLibrary.h>
 
-EFI_CONTEXT *EfiContext;
+EFI_SYSTEM_TABLE *gST;
+EFI_BOOT_SERVICES *gBS;
+EFI_RUNTIME_SERVICES *gRT;
+EFI_HANDLE gThisImage;
+EFI_HANDLE gThisDevice;
+CHAR16 *gRootPath;
 
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
@@ -37,28 +42,18 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 #ifdef GNU_EFI
 	InitializeLib(ImageHandle, SystemTable);
 #endif
+	gST = SystemTable;
+	gBS = SystemTable->BootServices;
+	gRT = SystemTable->RuntimeServices;
+	gThisImage = ImageHandle;
 
-	EFI_CONTEXT *Context;
-	EFI_STATUS Status;
-	Status = SystemTable->BootServices->AllocatePool(EfiLoaderData,
-							 sizeof(*Context),
-							 (VOID **)&Context);
+	EFI_STATUS Status = EfiDeviceLocate(&gThisDevice);
 	if (EFI_ERROR(Status))
 		return Status;
 
-	Context->BootServices = SystemTable->BootServices;
-	Context->RuntimeServices = SystemTable->RuntimeServices;
-	Context->SystemTable = SystemTable;
-	Context->LoaderImage = ImageHandle;
-	EfiContext = Context;
-
-	Status = EfiDeviceLocate(&Context->LoaderDevice);
+	Status = EfiDevicePathRootDirectory(&gRootPath);
 	if (EFI_ERROR(Status))
-		EfiMemoryFree(Context);
-
-	Status = EfiDevicePathRootDirectory(&Context->RootDirectory);
-	if (EFI_ERROR(Status))
-		EfiMemoryFree(Context);
+		return Status;
 
 	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
 

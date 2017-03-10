@@ -32,12 +32,11 @@
 EFI_STATUS
 EfiMemoryAllocate(IN UINTN Size, OUT VOID **AllocatedBuffer)
 {
-	return EfiContext->BootServices->AllocatePool(EfiLoaderData,
-						      Size, AllocatedBuffer);
+	return gBS->AllocatePool(EfiLoaderData, Size, AllocatedBuffer);
 }
 
 VOID
 EfiMemoryFree(VOID *Buffer)
 {
-	EfiContext->BootServices->FreePool(Buffer);
+	gBS->FreePool(Buffer);
 }

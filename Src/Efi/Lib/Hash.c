@@ -63,7 +63,7 @@ LoadHash2DxeCrypto(VOID)
 			EfiConsolePrintInfo(L"Try to put the "
 					    L"Hash2DxeCrypto.efi to %s and "
 					    L"re-launch SELoader\n",
-				    	    EfiContext->RootDirectory);
+					    gRootPath);
 		else if (Status == EFI_ACCESS_DENIED)
 			EfiConsolePrintInfo(L"Try to re-resign the "
 					    L"Hash2DxeCrypto.efi with the "

@@ -32,11 +32,9 @@
 EFI_STATUS
 EfiProtocolOpen(EFI_HANDLE Handle, CONST EFI_GUID *Protocol, VOID **Interface)
 {
-	EFI_HANDLE_PROTOCOL HandleProtocol;
-	HandleProtocol = EfiContext->BootServices->HandleProtocol;
-
 	EFI_STATUS Status;
-	Status = HandleProtocol(Handle, (EFI_GUID *)Protocol, Interface);
+
+	Status = gBS->HandleProtocol(Handle, (EFI_GUID *)Protocol, Interface);
 	if (EFI_ERROR(Status))
 		EfiConsolePrintError(L"Failed to open the protocol (err: %d)"
 				     L"\n", Status);
@@ -47,17 +45,13 @@ EfiProtocolOpen(EFI_HANDLE Handle, CONST EFI_GUID *Protocol, VOID **Interface)
 EFI_STATUS
 EfiProtocolLocate(CONST EFI_GUID *Protocol, VOID **Interface)
 {
-	return EfiContext->BootServices->LocateProtocol((EFI_GUID *)Protocol,
-							NULL, Interface);
+	return gBS->LocateProtocol((EFI_GUID *)Protocol, NULL, Interface);
 }
 
 EFI_STATUS
 EfiProtocolLocateHandles(CONST EFI_GUID *Protocol, EFI_HANDLE **HandleBuffer,
 			 UINTN *Handles)
 {
-	EFI_LOCATE_HANDLE_BUFFER Locate;
-
-	Locate = EfiContext->BootServices->LocateHandleBuffer;
-	return Locate(ByProtocol, (EFI_GUID *)Protocol, NULL,
-		      Handles, HandleBuffer);
+	return gBS->LocateHandleBuffer(ByProtocol, (EFI_GUID *)Protocol, NULL,
+				       Handles, HandleBuffer);
 }
