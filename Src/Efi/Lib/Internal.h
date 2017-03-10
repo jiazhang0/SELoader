@@ -42,7 +42,11 @@ EFI_STATUS
 UefiSecureBootGetStatus(UINT8 *SecureBoot);
 
 EFI_STATUS
-Pkcs7Verify(VOID *Data, UINTN DataSize, VOID *Signature, UINTN SignatureSize,
-	    BOOLEAN DetachedSignature);
+Pkcs7VerifyDetachedSignature(VOID *Hash, UINTN HashSize,
+			     VOID *Signature, UINTN SignatureSize);
+
+EFI_STATUS
+Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
+			     VOID *Signature, UINTN SignatureSize);
 
 #endif	/* __LIB_INTERNAL_H__ */

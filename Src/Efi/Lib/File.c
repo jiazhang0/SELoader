@@ -35,12 +35,13 @@ EFI_GUID gEfiSimpleFileSystemProtocolGuid =
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 #endif
 
-STATIC EFI_STATUS
-LoadFile(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize, BOOLEAN Verify);
-
-STATIC EFI_STATUS
-VerifyFileBuffer(VOID *Buffer, UINTN BufferSize, CONST CHAR16 *Path)
+STATIC BOOLEAN
+LoadSignatureRequired(CONST CHAR16 *Path)
 {
+	if (StrEndsWith(Path, L".p7a") == TRUE ||
+	    StrEndsWith(Path, L".p7s") == TRUE)
+		return FALSE;
+
 	UINT8 SelSecureBoot;
 	EFI_STATUS Status = SelSecureBootMode(&SelSecureBoot);
 	if (EFI_ERROR(Status)) {
@@ -48,120 +49,114 @@ VerifyFileBuffer(VOID *Buffer, UINTN BufferSize, CONST CHAR16 *Path)
 			EfiConsolePrintDebug(L"Ignore to verify file %s "
 					     L"due to SelSecureBoot unset\n",
 					     Path);
-		return EFI_SUCCESS;
+		else
+			EfiConsolePrintDebug(L"Ignore to verify file %s "
+					     L"(err: 0x%x)\n", Path, Status);
+		return FALSE;
 	}
 
 	if (SelSecureBoot == 0) {
-		EfiConsolePrintDebug(L"Ignore to verify file %s\n",
-				     Path);
-		return EFI_SUCCESS;
+		EfiConsolePrintDebug(L"Ignore to verify file %s due to "
+				     L"SelSecureBoot disabled\n", Path);
+		return FALSE;
 	}
 
-	CHAR16 *SignaturePath = StrAppend(Path, L".p7b");
-	if (!SignaturePath)
-		return EFI_OUT_OF_RESOURCES;
+	return TRUE;
+}
 
-	VOID *Signature;
-	UINTN SignatureSize;
-	Status = LoadFile(SignaturePath, &Signature, &SignatureSize, FALSE);
-	EfiMemoryFree(SignaturePath);
+STATIC EFI_STATUS
+OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
+{
+	EFI_FILE_IO_INTERFACE *FileSystem;
+	EFI_STATUS Status;
+
+	Status = EfiProtocolOpen(EfiContext->LoaderDevice,
+				 &gEfiSimpleFileSystemProtocolGuid,
+				 (VOID **)&FileSystem);
 	if (EFI_ERROR(Status))
 		return Status;
 
-	Status = EfiSignatureVerify(Signature, SignatureSize, Buffer,
-				    BufferSize);
-	EfiMemoryFree(Signature);
-	if (!EFI_ERROR(Status))
-		EfiConsolePrintError(L"Succeeded to verify %s\n",
-				     Path);
-	else
-		EfiConsolePrintDebug(L"Failed to verify the file %s "
-				     L"(err: 0x%x)\n", Path,
+	EFI_FILE_HANDLE Root;
+
+	Status = FileSystem->OpenVolume(FileSystem, &Root);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Unable to open volume for the file %s "
+				     L"(err: 0x%x)\n", Path, Status);
+		return Status;
+	}
+
+	CHAR16 *FilePath;
+
+	Status = EfiDevicePathCreate(Path, &FilePath);
+	if (EFI_ERROR(Status)) {
+		Root->Close(Root);
+		return Status;
+	}
+
+	Status = Root->Open(Root, FileHandle, FilePath, OpenMode,
+			    0);
+	Root->Close(Root);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Unable to open file %s for %s "
+				     L"(err: 0x%x)\n", FilePath,
+				     OpenMode & EFI_FILE_MODE_WRITE ? L"write" :
+								      L"read",
 				     Status);
+		EfiMemoryFree(FilePath);
+		return Status;
+	}
+	EfiMemoryFree(FilePath);
 
 	return Status;
 }
 
 STATIC EFI_STATUS
-LoadFile(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize, BOOLEAN Verify)
+LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
+	 UINTN *DataSize)
 {
-	EFI_FILE_IO_INTERFACE *FileSystem;
-	EFI_STATUS Status = EfiProtocolOpen(EfiContext->LoaderDevice,
-					    &gEfiSimpleFileSystemProtocolGuid,
-					    (VOID **)&FileSystem);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	EFI_FILE_HANDLE Root;
-	Status = FileSystem->OpenVolume(FileSystem, &Root);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Unable to open volume 0x%x for %s\n",
-				     Status, Path);
-		return Status;
-	}
-
 	CHAR16 *FilePath;
-	Status = EfiDevicePathCreate(Path, &FilePath);
-	if (EFI_ERROR(Status)) {
-		Root->Close(Root);
-		EfiConsolePrintError(L"Unable to create the file path "
-				     L"for %s (err: 0x%x)\n", Path, Status);
-		return Status;
+
+	if (!Suffix)
+		FilePath = (CHAR16 *)Path;
+	else {
+		FilePath = StrAppend(Path, Suffix);
+		if (!FilePath)
+			return EFI_OUT_OF_RESOURCES;
 	}
 
 	EFI_FILE_HANDLE FileHandle;
-	Status = Root->Open(Root, &FileHandle, FilePath, EFI_FILE_MODE_READ,
-			    0);
-	Root->Close(Root);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Unable to open file %s for read: "
-				     L"0x%x\n", FilePath, Status);
-		EfiMemoryFree(FilePath);
-		return Status;
-	}
+	EFI_STATUS Status;
+
+	Status = OpenFile(FilePath, EFI_FILE_MODE_READ, &FileHandle);
+	if (EFI_ERROR(Status))
+		goto ErrOnOpenFile;
 
 	EFI_FILE_INFO *FileInfo;
+
 	FileInfo = LibFileInfo(FileHandle);
 	if (!FileInfo) {
 		EfiConsolePrintError(L"Unable to get file info for %s\n",
 				     FilePath);
-		EfiMemoryFree(FilePath);
-		return EFI_OUT_OF_RESOURCES;
+		Status = EFI_OUT_OF_RESOURCES;
+		goto ErrOnReadFileInfo;
 	}
 
+	VOID *FileBuffer = NULL;
 	UINTN FileSize = (UINTN)FileInfo->FileSize;
+
 	EfiMemoryFree(FileInfo);
-	if (!FileSize) {
-		EfiConsolePrintError(L"Empty file %s\n", FilePath);
-		EfiMemoryFree(FilePath);
-		return EFI_INVALID_PARAMETER;
-	}
+	if (FileSize) {
+		Status = EfiMemoryAllocate(FileSize, &FileBuffer);
+		if (EFI_ERROR(Status))
+			goto ErrOnAllocFileBuffer;
 
-	VOID *FileBuffer;
-	Status = EfiMemoryAllocate(FileSize, &FileBuffer);
-	if (!FileBuffer) {
-		EfiConsolePrintError(L"Failed to allocate memory for %s\n",
-				     FilePath);
-		EfiMemoryFree(FilePath);
-		return EFI_OUT_OF_RESOURCES;
-	}
-
-	Status = FileHandle->Read(FileHandle, &FileSize, FileBuffer);
-	FileHandle->Close(FileHandle);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to read file %s: 0x%x\n",
-				     FilePath, Status);
-		EfiMemoryFree(FileBuffer);
-		EfiMemoryFree(FilePath);
-		return Status;
-	}
-
-	if (Verify == TRUE) {
-		Status = VerifyFileBuffer(FileBuffer, FileSize, FilePath);
-		if (EFI_ERROR(Status)) {	
+		Status = FileHandle->Read(FileHandle, &FileSize, FileBuffer);
+		if (EFI_ERROR(Status)) {
+			EfiConsolePrintError(L"Failed to read file %s "
+					     L"(err: 0x%x)\n", FilePath,
+					     Status);
 			EfiMemoryFree(FileBuffer);
-			EfiMemoryFree(FilePath);
-			return Status;
+			goto ErrOnReadFileBuffer;
 		}
 	}
 
@@ -174,13 +169,92 @@ LoadFile(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize, BOOLEAN Verify)
 	EfiConsolePrintDebug(L"File %s loaded (%d-byte)\n", FilePath,
 			     FileSize);
 
-	EfiMemoryFree(FilePath);
+ErrOnReadFileBuffer:
+ErrOnAllocFileBuffer:
+ErrOnReadFileInfo:
+	FileHandle->Close(FileHandle);
 
-	return EFI_SUCCESS;
+ErrOnOpenFile:
+	if (FilePath != Path)
+		EfiMemoryFree(FilePath);
+
+	return Status;
 }
 
 EFI_STATUS
 EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 {
-	return LoadFile(Path, Data, DataSize, TRUE);
+	if (!Path || !Data || !DataSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (LoadSignatureRequired(Path) == FALSE)
+		return LoadFile(Path, NULL, Data, DataSize);
+
+	EfiConsolePrintDebug(L"Attempting to load the attached signature "
+			     L"file %s.p7a ...\n", Path);
+
+	VOID *Signature;
+	UINTN SignatureSize;
+	EFI_STATUS Status = LoadFile(Path, L".p7a", &Signature,
+				     &SignatureSize);
+	if (!EFI_ERROR(Status)) {
+		Status = EfiSignatureVerifyAttached(Signature, SignatureSize,
+						    Data, DataSize);
+		EfiMemoryFree(Signature);
+		if (!EFI_ERROR(Status)) {
+			Status = EfiFileSave(Path, *Data, *DataSize);
+			if (!EFI_ERROR(Status))
+				return Status;
+
+			EfiMemoryFree(*Data);
+		}
+	}
+
+	EfiConsolePrintDebug(L"Attempting to load the detached signature "
+			     L"file %s.p7s ...\n", Path);
+
+	Status = LoadFile(Path, L".p7s", &Signature, &SignatureSize);
+	if (!EFI_ERROR(Status)) {
+		Status = LoadFile(Path, NULL, Data, DataSize);
+		if (EFI_ERROR(Status)) {
+			EfiMemoryFree(Signature);
+			EfiConsolePrintDebug(L"Failed to load the file "
+					     L"%s (err: 0x%x)\n", Path,
+					     Status);
+			return Status;
+		}
+
+		Status = EfiSignatureVerifyBuffer(Signature, SignatureSize,
+						  *Data, *DataSize);
+		if (EFI_ERROR(Status))
+			EfiMemoryFree(*Data);
+
+		EfiMemoryFree(Signature);
+	} else
+		EfiConsolePrintDebug(L"Failed to load the signature file "
+				     L"%s.p7a/.p7s\n", Path);
+
+	return Status;
+}
+
+EFI_STATUS
+EfiFileSave(CONST CHAR16 *Path, VOID *Data, UINTN DataSize)
+{
+	EFI_FILE_HANDLE FileHandle;
+	EFI_STATUS Status;
+
+	Status = OpenFile(Path, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE |
+			  EFI_FILE_MODE_CREATE, &FileHandle);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	Status = FileHandle->Write(FileHandle, &DataSize, Data);
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"File %s written (%d-byte)\n", Path,
+				     DataSize);
+	else
+		EfiConsolePrintError(L"Failed to write file %s "
+				     L"(err: 0x%x)\n", Path, Status);
+
+	return Status;
 }

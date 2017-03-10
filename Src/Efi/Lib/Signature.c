@@ -34,85 +34,78 @@
 #include "Internal.h"
 
 typedef struct {
-	UINTN Revision;	
-	UINTN SignedDataLength;
-	VOID *Pkcs7Signature;
-	UINTN Pkcs7SignatureSize;
-	EFI_GUID *HashAlgorithm;
+	UINTN Revision;
+	SEL_SIGNATURE_HEADER *Signature;
+	UINTN SignatureSize;
+	VOID *Payload;
+	UINTN PayloadSize;
 	UINTN Flags;
 } SEL_SIGNATURE_CONTEXT;
 
 STATIC EFI_STATUS
-ParseSignature(VOID *Signature, UINTN SignatureSize,
-	       SEL_SIGNATURE_CONTEXT *Context)
+ParseSelSignature(SEL_SIGNATURE_HEADER *Signature, UINTN SignatureSize,
+		  SEL_SIGNATURE_CONTEXT *Context)
 {
-	Context->HashAlgorithm = MemDup(&gEfiHashAlgorithmSha256Guid,
-					sizeof(gEfiHashAlgorithmSha256Guid));
-	if (!Context->HashAlgorithm)
-		return EFI_OUT_OF_RESOURCES;
-
 	Context->Revision = SelSignatureRevision;
-	Context->SignedDataLength = 0;
-	Context->Pkcs7Signature = Signature;
-	Context->Pkcs7SignatureSize = SignatureSize;
-	Context->Flags = SelSignatureTagSignaturePkcs7FlagsDetached;
+	Context->Signature = Signature;
+	Context->SignatureSize = SignatureSize;
+	Context->Payload = Signature;
+	Context->PayloadSize = SignatureSize;
+	Context->Flags = 0;
 
 	return EFI_SUCCESS;
 }
 
 EFI_STATUS
-EfiSignatureVerify(VOID *Signature, UINTN SignatureSize,
-		   VOID *Data, UINTN DataSize)
+EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
+			   VOID **Data, UINTN *DataSize)
 {
 	if (!Signature || !SignatureSize || !Data || !DataSize)
 		return EFI_INVALID_PARAMETER;
 
-	SEL_SIGNATURE_CONTEXT SignatureContext;
-	EFI_STATUS Status = ParseSignature(Signature, SignatureSize,
-					   &SignatureContext);
+	VOID *SelSignature = NULL;
+	UINTN SelSignatureSize = 0;
+	EFI_STATUS Status;
+
+	Status = Pkcs7VerifyAttachedSignature(&SelSignature, &SelSignatureSize,
+					      Signature, SignatureSize);
 	if (EFI_ERROR(Status))
 		return Status;
 
+	SEL_SIGNATURE_CONTEXT SignatureContext;
+	Status = ParseSelSignature(SelSignature, SelSignatureSize,
+				   &SignatureContext);
+	if (EFI_ERROR(Status)) {
+		EfiMemoryFree(SelSignature);
+		return Status;
+	}
+
+	*Data = SignatureContext.Payload;
+	*DataSize = SignatureContext.PayloadSize;
+
+	return Status;
+}
+
+EFI_STATUS
+EfiSignatureVerifyBuffer(VOID *Signature, UINTN SignatureSize,
+			 VOID *Data, UINTN DataSize)
+{
+	if (!Signature || !SignatureSize || !Data || !DataSize)
+		return EFI_INVALID_PARAMETER;
+
 	UINT8 *Hash;
 	UINTN HashSize;
+	EFI_STATUS Status;
 
-	BOOLEAN DetachedSignature;
-	DetachedSignature = !!(SignatureContext.Flags &
-			       SelSignatureTagSignaturePkcs7FlagsDetached);
-	if (DetachedSignature == TRUE) {
-		Status = EfiHashData(SignatureContext.HashAlgorithm,
-				     Data, DataSize, &Hash, &HashSize);
-		if (EFI_ERROR(Status))
-			return Status;
-	} else {
-		EFI_HASH_CONTEXT HashContext;
-
-		Status = EfiHashInitialize(SignatureContext.HashAlgorithm,
-					   &HashContext);
-		if (EFI_ERROR(Status))
-			return Status;
-
-		Status = EfiHashUpdate(&HashContext, Data, DataSize);
-		if (EFI_ERROR(Status)) {
-			EfiHashFinalize(&HashContext, NULL, 0);
-			return Status;
-		}
-
-		Status = EfiHashUpdate(&HashContext, Signature,
-				       SignatureContext.SignedDataLength);
-		if (EFI_ERROR(Status)) {
-			EfiHashFinalize(&HashContext, NULL, 0);
-			return Status;
-		}
-
-		EfiHashFinalize(&HashContext, &Hash, &HashSize);
-	}
+	Status = EfiHashData(&gEfiHashAlgorithmSha256Guid,
+			     Data, DataSize, &Hash, &HashSize);
+	if (EFI_ERROR(Status))
+		return Status;
 
 	EfiLibraryHexDump(L"Signed content hash", Hash, HashSize);
 
-	Status = Pkcs7Verify(Hash, HashSize, SignatureContext.Pkcs7Signature,
-			     SignatureContext.Pkcs7SignatureSize,
-			     DetachedSignature);
+	Status = Pkcs7VerifyDetachedSignature(Hash, HashSize,
+					      Signature, SignatureSize);
 	EfiMemoryFree(Hash);
 
 	return Status;

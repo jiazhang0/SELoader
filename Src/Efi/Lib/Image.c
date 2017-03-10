@@ -111,7 +111,7 @@ EfiImageExecute(CONST CHAR16 *Path)
 EFI_STATUS
 EfiImageExecuteSecure(CONST CHAR16 *Path)
 {
-	CHAR16 *SignaturePath = StrAppend(Path, L".p7b");
+	CHAR16 *SignaturePath = StrAppend(Path, L".p7s");
 	if (!SignaturePath) {
 		EfiConsolePrintError(L"Failed to set the path for signature "
 				     L"file %s\n", Path);
@@ -145,7 +145,8 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 	EfiConsolePrintDebug(L"The signed data file %s loaded\n",
 			     Path);
 
-	Status = Pkcs7Verify(Data, DataSize, Signature, SignatureSize, TRUE);
+	Status = EfiSignatureVerifyBuffer(Signature, SignatureSize, Data,
+					  DataSize);
 	EfiMemoryFree(Signature);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to verify the file %s\n",

@@ -225,6 +225,9 @@ EFI_STATUS
 EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize);
 
 EFI_STATUS
+EfiFileSave(CONST CHAR16 *Path, VOID *Data, UINTN DataSize);
+
+EFI_STATUS
 EfiImageExecute(CONST CHAR16 *Path);
 
 EFI_STATUS
@@ -259,8 +262,12 @@ EFI_STATUS
 SelSecureBootMode(UINT8 *SelSecureBoot);
 
 EFI_STATUS
-EfiSignatureVerify(VOID *Signature, UINTN SignatureSize,
-		   VOID *Data, UINTN DataSize);
+EfiSignatureVerifyBuffer(VOID *Signature, UINTN SignatureSize,
+			 VOID *Data, UINTN DataSize);
+
+EFI_STATUS
+EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
+			   VOID **Data, UINTN *DataSize);
 
 typedef struct {
 	EFI_GUID *HashAlgorithm;

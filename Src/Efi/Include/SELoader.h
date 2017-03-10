@@ -29,4 +29,73 @@
 #ifndef SELOADER_H
 #define SELOADER_H
 
+#include <Efi.h>
+
+#pragma pack(1)
+
+#define SelSignatureRevision			1
+
+typedef struct {
+	UINT8 Revision;		/* signature format version */
+	UINT32 HeaderSize;
+	UINT32 TagDirectorySize;
+	UINT32 NumberOfTag;
+	UINT32 Flags;
+} SEL_SIGNATURE_HEADER;
+
+typedef struct {
+	UINT32 Tag;
+	UINT8 Revision;
+	UINT8 Reserved[3];
+	UINT32 DataOffset;
+	UINT32 DataSize;
+} SEL_SIGNATURE_TAG;
+
+#define SelSignatureTagHashAlgorithm		1
+
+typedef enum {
+	SelHashAlgorithmSha1,
+	SelHashAlgorithmSha224,
+	SelHashAlgorithmSha256,
+	SelHashAlgorithmSha384,
+	SelHashAlgorithmSha512,
+} SEL_SIGNATURE_HASH_ALGORITHM;
+
+typedef struct {
+	UINT8 Revision;
+	SEL_SIGNATURE_HASH_ALGORITHM Algorithm;
+} SEL_SIGNATURE_TAG_HASH_ALGORITHM;
+
+#define SelSignatureTagSignatureAlgorithm	2
+
+typedef enum {
+	SelSignatureAlgorithmPkcs7,
+} SEL_SIGNATURE_SIGNATURE_ALGORITHM;
+
+typedef struct {
+	UINT8 Revision;
+	SEL_SIGNATURE_SIGNATURE_ALGORITHM Algorithm;
+} SEL_SIGNATURE_TAG_SIGNATURE_ALGORITHM;
+
+#define SelSignatureTagSignature		3
+
+typedef struct {
+	UINT8 Revision;
+	UINT8 Signature[0];
+} SEL_SIGNATURE_TAG_SIGNATURE;
+
+#define SelSignatureTagSignaturePkcs7FlagsDetached	(1 << 0)
+
+typedef struct {
+	UINT8 Revision;
+	UINT32 Flags;
+	UINT8 Signature[0];
+} SEL_SIGNATURE_TAG_SIGNATURE_PKCS7;
+
+#define SelSignatureTagCreationTime		10
+#define SelSignatureTagFileName			11
+#define SelSignatureTagFileSize			12
+
+#pragma pack()
+
 #endif	/* SELOADER_H */
