@@ -83,6 +83,9 @@ StrnChr(CONST CHAR16 *String, UINTN MaxLength, CHAR16 SearchChar);
 CHAR16 *
 StrrChr(CONST CHAR16 *String, CHAR16 SearchChar);
 
+BOOLEAN
+StrEndsWith(CONST CHAR16 *String, CONST CHAR16 *SearchString);
+
 INTN
 StrCmp(CONST CHAR16 *FirstString, CONST CHAR16 *SecondString);
 
