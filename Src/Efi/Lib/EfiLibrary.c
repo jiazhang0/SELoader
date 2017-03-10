@@ -47,7 +47,9 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	gRT = SystemTable->RuntimeServices;
 	gThisImage = ImageHandle;
 
-	EFI_STATUS Status = EfiDeviceLocate(&gThisDevice);
+	EFI_STATUS Status;
+
+	Status = EfiDeviceLocate(&gThisDevice);
 	if (EFI_ERROR(Status))
 		return Status;
 
@@ -58,11 +60,13 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
 
 	EfiConsolePrintLevel Level;
+
 	Status = EfiConsoleGetVerbosity(&Level);
-	if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG) {
+	if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG)
 		EfiSecurityPolicyPrint();
-		EfiStallSeconds(5);
-	}
+
+	EfiConsoleTraceInfo(L"Traced on.\nPress any key to continue "
+			    L"when prompted with \">>|\" ...\n");
 
 	return Status;
 }

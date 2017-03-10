@@ -31,21 +31,46 @@
 
 STATIC EfiConsolePrintLevel CurrentConsolePrintLevel = EFI_CPL_DEBUG;
 
-UINTN
-EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
+STATIC UINTN
+ConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, VA_LIST Marker)
 {
 	if (Level < CurrentConsolePrintLevel)
 		return 0;
 
-	VA_LIST Marker;
-	VA_START(Marker, Format);
+	return VPrint(Format, Marker);
+}
 
-	UINTN OutputLen = VPrint(Format, Marker);
- 
+UINTN
+EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
+{
+	VA_LIST Marker;
+
+	VA_START(Marker, Format);
+	UINTN OutputLength = ConsolePrint(Level, Format, Marker);
 	VA_END(Marker);
 
-	return OutputLen;
+	return OutputLength;
 }
+
+#ifdef TRACE_BUILD
+
+UINTN
+EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
+{
+	VA_LIST Marker;
+
+	VA_START(Marker, Format);
+	UINTN OutputLength = ConsolePrint(Level, Format, Marker);
+	VA_END(Marker);
+
+	CHAR16 Typed;
+
+	Input(L">>|\n", &Typed, 1);
+
+	return OutputLength;
+}
+
+#endif
 
 EFI_STATUS
 EfiConsoleSetVerbosity(EfiConsolePrintLevel Level)

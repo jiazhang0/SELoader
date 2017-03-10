@@ -197,7 +197,7 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 
 #define EfiConsolePrintWarning(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_WARNING, Format, ##__VA_ARGS__);	\
+		EfiConsolePrint(EFI_CPL_WARNING, Format, ##__VA_ARGS__); \
 	} while (0)
 
 #define EfiConsolePrintError(Format, ...)	\
@@ -208,6 +208,42 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 #define EfiConsolePrintFault(Format, ...)	\
 	do {	\
 		EfiConsolePrint(EFI_CPL_FAULT, Format, ##__VA_ARGS__);	\
+	} while (0)
+
+#ifdef TRACE_BUILD
+UINTN
+EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
+#else
+STATIC inline UINTN
+EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
+{
+	return 0;
+}
+#endif
+
+#define EfiConsoleTraceDebug(Format, ...)	\
+	do {	\
+		EfiConsoleTrace(EFI_CPL_DEBUG, Format, ##__VA_ARGS__);	\
+	} while (0)
+
+#define EfiConsoleTraceInfo(Format, ...)	\
+	do {	\
+		EfiConsoleTrace(EFI_CPL_INFO, Format, ##__VA_ARGS__);  \
+	} while (0)
+
+#define EfiConsoleTraceWarning(Format, ...)	\
+	do {	\
+		EfiConsoleTrace(EFI_CPL_WARNING, Format, ##__VA_ARGS__); \
+	} while (0)
+
+#define EfiConsoleTraceError(Format, ...)	\
+	do {	\
+		EfiConsoleTrace(EFI_CPL_ERROR, Format, ##__VA_ARGS__); \
+	} while (0)
+
+#define EfiConsoleTraceFault(Format, ...)	\
+	do {	\
+		EfiConsoleTrace(EFI_CPL_FAULT, Format, ##__VA_ARGS__); \
 	} while (0)
 
 UINTN

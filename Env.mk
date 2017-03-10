@@ -34,3 +34,7 @@ CFLAGS := -std=gnu11 -Wall -Wsign-compare -Werror \
 ifneq ($(DEBUG_BUILD),)
 	CFLAGS += -ggdb -DDEBUG_BUILD
 endif
+
+ifneq ($(TRACE_BUILD),)
+	CFLAGS += -DTRACE_BUILD
+endif

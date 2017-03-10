@@ -43,6 +43,13 @@ VPrint(
 	VA_LIST args
 );
 
+VOID
+Input(
+	IN CHAR16 *Prompt OPTIONAL,
+	OUT CHAR16 *InStr,
+	IN UINTN StrLen
+);
+
 INTN
 StrCmp(
 	IN CONST CHAR16 *s1,
