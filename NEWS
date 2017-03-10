@@ -1,3 +1,9 @@
+Version 0.1.1
+=============
+Released: 2017-03-10
+
+- Add the initial verification support for the PKCS#7 attached signature.
+
 Version 0.1.0
 =============
 Released: 2017-03-08
