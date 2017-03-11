@@ -29,18 +29,38 @@
 #include <Efi.h>
 #include <EfiLibrary.h>
 
+#define SELOADER_CONFIGURATION		L"SELoader.conf"
+#define CHAINLOADER			L"grubx64.efi"
+
 STATIC EFI_STATUS
 LoadConfig(VOID)
 {
 	VOID *Config;
 	UINTN ConfigSize;
-	EFI_STATUS Status = EfiFileLoad(L"SELoader.conf", &Config,
-					&ConfigSize);
+	EFI_STATUS Status;
+
+	Status = EfiFileLoad(SELOADER_CONFIGURATION, &Config, &ConfigSize);
 	
 	/*
 	 * TODO: parse the configuration to allow to customize the
 	 * behavior of SELoader.
 	 */
+
+	EfiConsoleTraceDebug(SELOADER_CONFIGURATION L" parsed");
+
+	return Status;
+}
+
+STATIC EFI_STATUS
+LaunchLoader(VOID)
+{
+	EfiConsoleTraceDebug(L"Preparing to load " CHAINLOADER L" ...");
+
+	EFI_STATUS Status;
+
+	Status = EfiImageExecute(CHAINLOADER);
+
+	EfiConsoleTraceDebug(CHAINLOADER L" exited with 0x%x\n", Status);
 
 	return Status;
 }
@@ -48,23 +68,13 @@ LoadConfig(VOID)
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-	EFI_STATUS Status = EfiLibraryInitialize(ImageHandle, SystemTable);
+	EFI_STATUS Status;
+
+	Status = EfiLibraryInitialize(ImageHandle, SystemTable);
 	if (EFI_ERROR(Status))
 		return Status;
 
 	LoadConfig();
 
-	EfiConsolePrintLevel Level;
-	Status = EfiConsoleGetVerbosity(&Level);
-	if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG) {
-		EfiConsolePrintDebug(L"Preparing to load grubx64.efi ...\n");
-		EfiStallSeconds(3);
-	}
-
-	Status = EfiImageExecute(L"grubx64.efi");
-
-	EfiConsolePrintDebug(L"grubx64.efi exited with "
-			     L"0x%x\n", Status);
-
-	return Status;
+	return LaunchLoader();
 }
