@@ -1,2 +1,0 @@
-X64/ProcessorBind.h:
-  #define EFIAPI __attribute__((ms_abi))
