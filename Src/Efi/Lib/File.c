@@ -65,7 +65,7 @@ LoadSignatureRequired(CONST CHAR16 *Path)
 }
 
 STATIC EFI_STATUS
-OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
+OpenRootDirectory(EFI_FILE_HANDLE *RootDirectoryHandle)
 {
 	EFI_FILE_IO_INTERFACE *FileSystem;
 	EFI_STATUS Status;
@@ -76,14 +76,24 @@ OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
 	if (EFI_ERROR(Status))
 		return Status;
 
-	EFI_FILE_HANDLE Root;
+	Status = FileSystem->OpenVolume(FileSystem, RootDirectoryHandle);
+	if (EFI_ERROR(Status))
+		EfiConsolePrintError(L"Failed to open volume (err: 0x%x)\n",
+				     Status);
 
-	Status = FileSystem->OpenVolume(FileSystem, &Root);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Unable to open volume for the file %s "
-				     L"(err: 0x%x)\n", Path, Status);
+	return Status;
+}
+
+STATIC EFI_STATUS
+OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle,
+	 EFI_FILE_HANDLE *RootDirectoryHandle)
+{
+	EFI_FILE_HANDLE Root;
+	EFI_STATUS Status;
+
+	Status = OpenRootDirectory(&Root);
+	if (EFI_ERROR(Status))
 		return Status;
-	}
 
 	CHAR16 *FilePath;
 
@@ -93,11 +103,13 @@ OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
 		return Status;
 	}
 
-	Status = Root->Open(Root, FileHandle, FilePath, OpenMode,
-			    0);
-	Root->Close(Root);
+	Status = Root->Open(Root, FileHandle, FilePath, OpenMode, 0);
+
+	if (!RootDirectoryHandle)
+		Root->Close(Root);
+
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Unable to open file %s for %s "
+		EfiConsolePrintError(L"Failed to open file %s for %s "
 				     L"(err: 0x%x)\n", FilePath,
 				     OpenMode & EFI_FILE_MODE_WRITE ? L"write" :
 								      L"read",
@@ -106,6 +118,9 @@ OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle)
 		return Status;
 	}
 	EfiMemoryFree(FilePath);
+
+	if (RootDirectoryHandle)
+		*RootDirectoryHandle = Root;
 
 	return Status;
 }
@@ -127,7 +142,7 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 	EFI_FILE_HANDLE FileHandle;
 	EFI_STATUS Status;
 
-	Status = OpenFile(FilePath, EFI_FILE_MODE_READ, &FileHandle);
+	Status = OpenFile(FilePath, EFI_FILE_MODE_READ, &FileHandle, NULL);
 	if (EFI_ERROR(Status))
 		goto ErrOnOpenFile;
 
@@ -135,16 +150,17 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 
 	FileInfo = LibFileInfo(FileHandle);
 	if (!FileInfo) {
-		EfiConsolePrintError(L"Unable to get file info for %s\n",
+		EfiConsolePrintError(L"Failed to get file info for %s\n",
 				     FilePath);
 		Status = EFI_OUT_OF_RESOURCES;
 		goto ErrOnReadFileInfo;
 	}
 
-	VOID *FileBuffer = NULL;
 	UINTN FileSize = (UINTN)FileInfo->FileSize;
-
 	EfiMemoryFree(FileInfo);
+
+	VOID *FileBuffer = NULL;
+
 	if (FileSize) {
 		Status = EfiMemoryAllocate(FileSize, &FileBuffer);
 		if (EFI_ERROR(Status))
@@ -244,16 +260,38 @@ EfiFileSave(CONST CHAR16 *Path, VOID *Data, UINTN DataSize)
 	EFI_STATUS Status;
 
 	Status = OpenFile(Path, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE |
-			  EFI_FILE_MODE_CREATE, &FileHandle);
+			  EFI_FILE_MODE_CREATE, &FileHandle, NULL);
 	if (EFI_ERROR(Status))
 		return Status;
 
 	Status = FileHandle->Write(FileHandle, &DataSize, Data);
+	FileHandle->Close(FileHandle);
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"File %s written (%d-byte)\n", Path,
 				     DataSize);
 	else
 		EfiConsolePrintError(L"Failed to write file %s "
+				     L"(err: 0x%x)\n", Path, Status);
+
+	return Status;
+}
+
+EFI_STATUS
+EfiFileDelete(CONST CHAR16 *Path)
+{
+	EFI_FILE_HANDLE FileHandle;
+	EFI_STATUS Status;
+
+	Status = OpenFile(Path, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, &FileHandle,
+			  NULL);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	Status = FileHandle->Delete(FileHandle);
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"File %s deleted\n", Path);
+	else
+		EfiConsolePrintError(L"Failed to delete file %s "
 				     L"(err: 0x%x)\n", Path, Status);
 
 	return Status;

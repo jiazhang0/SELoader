@@ -257,6 +257,9 @@ EFI_STATUS
 EfiFileSave(CONST CHAR16 *Path, VOID *Data, UINTN DataSize);
 
 EFI_STATUS
+EfiFileDelete(CONST CHAR16 *Path);
+
+EFI_STATUS
 EfiImageExecute(CONST CHAR16 *Path);
 
 EFI_STATUS
