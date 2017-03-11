@@ -57,15 +57,25 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 UINTN
 EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 {
-	VA_LIST Marker;
+	UINTN OutputLength = 0;
 
-	VA_START(Marker, Format);
-	UINTN OutputLength = ConsolePrint(Level, Format, Marker);
-	VA_END(Marker);
+	if (Format) {
+		VA_LIST Marker;
+
+		VA_START(Marker, Format);
+		OutputLength = ConsolePrint(Level, Format, Marker);
+		VA_END(Marker);
+	}
 
 	CHAR16 Typed;
+	CHAR16 *Prompt;
 
-	Input(L">>|\n", &Typed, 1);
+	if (Format)
+		Prompt = L" >>|\n";
+	else
+		Prompt = L">>|\n";
+
+	Input(Prompt, &Typed, 1);
 
 	return OutputLength;
 }
