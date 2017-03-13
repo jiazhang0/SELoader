@@ -35,35 +35,6 @@ EFI_GUID gEfiSimpleFileSystemProtocolGuid =
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 #endif
 
-STATIC BOOLEAN
-LoadSignatureRequired(CONST CHAR16 *Path)
-{
-	if (StrEndsWith(Path, L".p7a") == TRUE ||
-	    StrEndsWith(Path, L".p7s") == TRUE)
-		return FALSE;
-
-	UINT8 SelSecureBoot;
-	EFI_STATUS Status = SelSecureBootMode(&SelSecureBoot);
-	if (EFI_ERROR(Status)) {
-		if (Status == EFI_NOT_FOUND)
-			EfiConsolePrintDebug(L"Ignore to verify file %s "
-					     L"due to SelSecureBoot unset\n",
-					     Path);
-		else
-			EfiConsolePrintDebug(L"Ignore to verify file %s "
-					     L"(err: 0x%x)\n", Path, Status);
-		return FALSE;
-	}
-
-	if (SelSecureBoot == 0) {
-		EfiConsolePrintDebug(L"Ignore to verify file %s due to "
-				     L"SelSecureBoot disabled\n", Path);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
 STATIC EFI_STATUS
 OpenRootDirectory(EFI_FILE_HANDLE *RootDirectoryHandle)
 {
@@ -197,22 +168,67 @@ ErrOnOpenFile:
 	return Status;
 }
 
+STATIC BOOLEAN
+LoadSignatureRequired(CONST CHAR16 *Path)
+{
+	if (StrEndsWith(Path, L".p7a") == TRUE ||
+	    StrEndsWith(Path, L".p7s") == TRUE)
+		return FALSE;
+
+	UINT8 SelSecureBoot;
+	EFI_STATUS Status;
+
+	Status = SelSecureBootMode(&SelSecureBoot);
+	if (EFI_ERROR(Status)) {
+		if (Status == EFI_NOT_FOUND)
+			EfiConsolePrintDebug(L"Ignore to verify file %s "
+					     L"due to SelSecureBoot unset\n",
+					     Path);
+		else
+			EfiConsolePrintDebug(L"Ignore to verify file %s "
+					     L"(err: 0x%x)\n", Path, Status);
+		return FALSE;
+	}
+
+	if (SelSecureBoot == 0) {
+		EfiConsolePrintDebug(L"Ignore to verify file %s due to "
+				     L"SelSecureBoot disabled\n", Path);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 EFI_STATUS
 EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 {
 	if (!Path || !Data || !DataSize)
 		return EFI_INVALID_PARAMETER;
 
-	if (LoadSignatureRequired(Path) == FALSE)
-		return LoadFile(Path, NULL, Data, DataSize);
+	BOOLEAN CheckSignature;
+	EFI_STATUS Status;
+
+	CheckSignature = LoadSignatureRequired(Path);
+	if (CheckSignature == FALSE) {
+		Status = LoadFile(Path, NULL, Data, DataSize);
+		/*
+		 * Extract the content from .p7a if the specified file
+		 * doesn't exist.
+		 */
+		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
+			return Status;
+	}
 
 	EfiConsolePrintDebug(L"Attempting to load the attached signature "
-			     L"file %s.p7a ...\n", Path);
+			     L"file %s.p7a %s...\n", Path,
+			     CheckSignature == TRUE ? L"" :
+						      L"for the extracted "
+						      L"content ");
 
 	VOID *Signature;
 	UINTN SignatureSize;
-	EFI_STATUS Status = LoadFile(Path, L".p7a", &Signature,
-				     &SignatureSize);
+
+	Status = LoadFile(Path, L".p7a", &Signature, &SignatureSize);
 	if (!EFI_ERROR(Status)) {
 		Status = EfiSignatureVerifyAttached(Signature, SignatureSize,
 						    Data, DataSize);
@@ -224,6 +240,11 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 			EfiMemoryFree(*Data);
 		}
+	}
+
+	if (CheckSignature == FALSE) {
+		EfiConsolePrintError(L"Unable to load file %s\n", Path);
+		return Status;
 	}
 
 	EfiConsolePrintDebug(L"Attempting to load the detached signature "
