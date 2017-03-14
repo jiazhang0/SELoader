@@ -210,16 +210,8 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 		EfiConsolePrint(EFI_CPL_FAULT, Format, ##__VA_ARGS__);	\
 	} while (0)
 
-#ifdef TRACE_BUILD
 UINTN
 EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
-#else
-STATIC inline UINTN
-EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
-{
-	return 0;
-}
-#endif
 
 #define EfiConsoleTraceDebug(Format, ...)	\
 	do {	\

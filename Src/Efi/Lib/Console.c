@@ -52,8 +52,6 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 	return OutputLength;
 }
 
-#ifdef TRACE_BUILD
-
 UINTN
 EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 {
@@ -67,6 +65,7 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 		VA_END(Marker);
 	}
 
+#ifdef TRACE_BUILD
 	CHAR16 Typed;
 	CHAR16 *Prompt;
 
@@ -76,11 +75,9 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 		Prompt = L">>|\n";
 
 	Input(Prompt, &Typed, 1);
-
+#endif
 	return OutputLength;
 }
-
-#endif
 
 EFI_STATUS
 EfiConsoleSetVerbosity(EfiConsolePrintLevel Level)
