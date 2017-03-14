@@ -54,7 +54,7 @@ MemCmp(CONST VOID *FirstSource, CONST VOID *SecondSource, UINTN MaxLength);
 VOID *
 MemDup(CONST VOID *Source, UINTN Length);
 
-#ifndef GNU_EFI
+#ifndef GNU_EFI_VERSION
 CHAR16 *
 StrCpy(CHAR16 *Destination, CONST CHAR16 *Source);
 

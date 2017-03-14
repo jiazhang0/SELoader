@@ -32,7 +32,7 @@
 
 #include "Internal.h"
 
-#ifndef GNU_EFI
+#if GNU_EFI_VERSION <= 303
 EFI_GUID gEfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 #endif
 

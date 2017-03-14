@@ -45,7 +45,7 @@
 #include <Edk2/Library/UefiBootServicesTableLib.h>
 #include <Edk2/Library/UefiRuntimeServicesTableLib.h>
 
-#ifdef GNU_EFI
+#ifdef GNU_EFI_VERSION
 #include <GnuEfi.h>
 #endif
 

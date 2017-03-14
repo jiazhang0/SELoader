@@ -30,7 +30,7 @@
 #include <EfiLibrary.h>
 #include <BaseLibrary.h>
 
-#ifndef GNU_EFI
+#if GNU_EFI_VERSION <= 303
 EFI_GUID gEfiSimpleFileSystemProtocolGuid =
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 #endif

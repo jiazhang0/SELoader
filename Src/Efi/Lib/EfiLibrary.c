@@ -39,7 +39,7 @@ CHAR16 *gRootPath;
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-#ifdef GNU_EFI
+#ifdef GNU_EFI_VERSION
 	InitializeLib(ImageHandle, SystemTable);
 #endif
 	gST = SystemTable;

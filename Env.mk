@@ -25,6 +25,7 @@ sbindir ?= $(prefix)/sbin
 includedir ?= $(prefix)/include
 
 gnuefi_libdir ?= $(libdir)
+GNU_EFI_VERSION ?= 304
 
 LIB_GCC ?= $(shell $(CC) -print-libgcc-file-name)
 LDFLAGS := --warn-common --no-undefined --fatal-warnings \

@@ -13,8 +13,8 @@ CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
 			  $(TOPDIR)/Src/Efi/Include/Edk2 \
 			  $(shell $(CC) -print-file-name=include)) \
 	  -DEFIAPI=__attribute__\(\(ms_abi\)\) -DNO_MSABI_VA_FUNCS \
-	  -DGNU_EFI -DCONFIG_$(ARCH) -DGNU_EFI_USE_MS_ABI \
-	  -DSEL_VERSION=L\"$(SEL_VERSION)\"
+	  -DGNU_EFI_VERSION=$(GNU_EFI_VERSION) -DCONFIG_$(ARCH) \
+	  -DGNU_EFI_USE_MS_ABI -DSEL_VERSION=L\"$(SEL_VERSION)\"
 
 ifeq ($(ARCH),x86_64)
     EFI_ARCH = x64
