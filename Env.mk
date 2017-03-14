@@ -28,10 +28,14 @@ gnuefi_libdir ?= $(libdir)
 GNU_EFI_VERSION ?= 304
 
 LIB_GCC ?= $(shell $(CC) -print-libgcc-file-name)
+
 LDFLAGS := --warn-common --no-undefined --fatal-warnings \
 	   $(patsubst $(join -Wl,,)%,%,$(EXTRA_LDFLAGS))
 CFLAGS := -std=gnu11 -Wall -Wsign-compare -Werror \
 	  $(EXTRA_CFLAGS) $(addprefix $(join -Wl,,),$(LDFLAGS))
+
+SIGNING_KEY ?= $(TOPDIR)/Key/efi_sb_keys/DB.key
+SIGNING_CERT ?= $(TOPDIR)/Key/efi_sb_key/DB.pem
 
 ifneq ($(DEBUG_BUILD),)
 	CFLAGS += -ggdb -DDEBUG_BUILD
