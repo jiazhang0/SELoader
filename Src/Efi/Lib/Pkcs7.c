@@ -85,15 +85,18 @@ MergeSignatureList(EFI_SIGNATURE_LIST ***Destination,
 STATIC EFI_STATUS
 InitializePkcs7(VOID)
 {
+	EfiConsoleTraceDebug(L"Initializing PKCS#7 infrastructure ...");
+
 	EFI_STATUS Status = EfiProtocolLocate(&gEfiPkcs7VerifyProtocolGuid,
 					      (VOID **)&Pkcs7VerifyProtocol);
 	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintInfo(L"Pkcs7Verify protocol installed\n");
+		EfiConsolePrintInfo(L"Pkcs7Verify protocol installed "
+				    L"by BIOS\n");
 		return EFI_SUCCESS;
 	}
 
-	EfiConsolePrintDebug(L"Attempting to load Pkcs7VerifyDxe "
-			     L"driver ...\n");
+	EfiConsoleTraceDebug(L"Pkcs7Verify protocol not installed by BIOS.\n"
+			     L"Attempting to load Pkcs7VerifyDxe driver ...");
 
 	Status = EfiImageLoadDriver(L"Pkcs7VerifyDxe.efi");
 	if (EFI_ERROR(Status)) {
@@ -164,7 +167,7 @@ InitializePkcs7(VOID)
 
 	Pkcs7Initialized = TRUE;
 
-	EfiConsolePrintInfo(L"Pkcs7Verify protocol loaded\n");
+	EfiConsoleTraceInfo(L"Pkcs7Verify protocol loaded");
 
 	return EFI_SUCCESS;
 
