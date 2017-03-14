@@ -28,9 +28,12 @@
 
 #include <Efi.h>
 #include <EfiLibrary.h>
+#include <SELoader.h>
 
-#define SELOADER_CONFIGURATION		L"SELoader.conf"
-#define CHAINLOADER			L"grubx64.efi"
+#define SELOADER_CONFIGURATION			L"SELoader.conf"
+#ifndef SELOADER_CHAINLOADER
+#  define SELOADER_CHAINLOADER			L"grubx64.efi"
+#endif
 
 STATIC EFI_STATUS
 LoadConfig(VOID)
@@ -46,7 +49,8 @@ LoadConfig(VOID)
 	 * behavior of SELoader.
 	 */
 
-	EfiConsoleTraceDebug(SELOADER_CONFIGURATION L" parsed");
+	EfiConsoleTraceDebug(SELOADER_CONFIGURATION L" parsed (err: 0x%x)",
+			     Status);
 
 	return Status;
 }
@@ -54,13 +58,15 @@ LoadConfig(VOID)
 STATIC EFI_STATUS
 LaunchLoader(VOID)
 {
-	EfiConsoleTraceDebug(L"Preparing to load " CHAINLOADER L" ...");
+	EfiConsoleTraceDebug(L"Preparing to load " SELOADER_CHAINLOADER
+			     L" ...");
 
 	EFI_STATUS Status;
 
-	Status = EfiImageExecute(CHAINLOADER);
+	Status = EfiImageExecute(SELOADER_CHAINLOADER);
 
-	EfiConsoleTraceDebug(CHAINLOADER L" exited with 0x%x\n", Status);
+	EfiConsoleTraceDebug(SELOADER_CHAINLOADER L" exited with 0x%x\n",
+			     Status);
 
 	return Status;
 }

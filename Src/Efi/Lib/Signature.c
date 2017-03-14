@@ -34,24 +34,256 @@
 #include "Internal.h"
 
 typedef struct {
-	UINTN Revision;
-	SEL_SIGNATURE_HEADER *Signature;
-	UINTN SignatureSize;
-	VOID *Payload;
+	UINT8 Revision;
+	SEL_SIGNATURE_HEADER *Header;
+	UINTN HeaderSize;
+	SEL_SIGNATURE_TAG *TagDirectory;
+	UINTN NumberOfTag;
+	UINTN TagDirectorySize;
+	UINT8 *Payload;
 	UINTN PayloadSize;
-	UINTN Flags;
+	UINT8 *Content;
+	UINTN ContentSize;
+	EFI_GUID *HashAlgorithm;
+	UINT8 *Signature;
+	UINTN SignatureSize;
 } SEL_SIGNATURE_CONTEXT;
 
-STATIC EFI_STATUS
-ParseSelSignature(SEL_SIGNATURE_HEADER *Signature, UINTN SignatureSize,
-		  SEL_SIGNATURE_CONTEXT *Context)
+STATIC VOID
+InitContext(SEL_SIGNATURE_CONTEXT *Context)
 {
-	Context->Revision = SelSignatureRevision;
+	MemSet(Context, 0, sizeof(*Context));
+}
+
+STATIC EFI_STATUS
+ParseHashAlgorithm(SEL_SIGNATURE_HASH_ALGORITHM HashAlg,
+		   SEL_SIGNATURE_CONTEXT *Context)
+{
+	switch (HashAlg) {
+	case SelHashAlgorithmSha1:
+		Context->HashAlgorithm = &gEfiHashAlgorithmSha1Guid;
+		break;
+	case SelHashAlgorithmSha224:
+		Context->HashAlgorithm = &gEfiHashAlgorithmSha224Guid;
+		break;
+	case SelHashAlgorithmSha256:
+		Context->HashAlgorithm = &gEfiHashAlgorithmSha256Guid;
+		break;
+	case SelHashAlgorithmSha384:
+		Context->HashAlgorithm = &gEfiHashAlgorithmSha384Guid;
+		break;
+	case SelHashAlgorithmSha512:
+		Context->HashAlgorithm = &gEfiHashAlgorithmSha512Guid;
+		break;
+	default:
+		EfiConsolePrintError(L"Unsupported hash algorithm (0x%x)\n",
+				     HashAlg);
+		return EFI_UNSUPPORTED;
+	}
+
+	return EFI_SUCCESS;
+}
+
+STATIC EFI_STATUS
+ParseHeader(UINT8 *Signature, UINTN SignatureSize,
+		     SEL_SIGNATURE_CONTEXT *Context)
+{
+	SEL_SIGNATURE_HEADER *Header = (SEL_SIGNATURE_HEADER *)Signature;
+
+	if (SignatureSize <= sizeof(SEL_SIGNATURE_HEADER)) {
+		EfiConsolePrintError(L"Invalid signature header\n");
+		return EFI_UNSUPPORTED;
+	}
+
+	if (MemCmp(&Header->Magic, SelSigantureMagic, sizeof(Header->Magic))) {
+		EfiConsolePrintError(L"Unrecognized signature format\n");
+		return EFI_UNSUPPORTED;
+	}
+
+	EfiConsolePrintDebug(L"Signature format revision %d supported\n",
+			     SelSignatureRevision);
+
+	if (Header->Revision == SelSignatureRevision)
+		Context->Revision = SelSignatureRevision;
+	else if (!Header->Revision) {
+		EfiConsolePrintDebug(L"Current signature format revision "
+				     L"assumed\n");
+		Context->Revision = SelSignatureRevision;
+	} else if (Header->Revision < SelSignatureRevision) {
+		EfiConsolePrintWarning(L"Degrade the signature format "
+				       L"revision to %d\n",
+				       Header->Revision);
+		Context->Revision = Header->Revision;
+	} else {
+		EfiConsolePrintError(L"Unrecognized signature format "
+				     L"revision %d\n", Header->Revision);
+		return EFI_UNSUPPORTED;
+	}
+
+	if (Header->HeaderSize >= SignatureSize) {
+		EfiConsolePrintError(L"Invalid signature header size\n");
+		return EFI_UNSUPPORTED;
+	}
+
+	UINTN TagDirectorySize = Header->NumberOfTag *
+				 sizeof(SEL_SIGNATURE_TAG);
+	if (!TagDirectorySize || TagDirectorySize >
+				 Header->TagDirectorySize
+			      || Header->HeaderSize +
+				 Header->TagDirectorySize >=
+				 SignatureSize) {
+		EfiConsolePrintError(L"Invalid signature tag directory "
+				     L"size\n");
+		return EFI_UNSUPPORTED;
+	}
+
+	Context->Header = Header;
+	Context->HeaderSize = Header->HeaderSize;
+	Context->TagDirectory = (SEL_SIGNATURE_TAG *)(Signature +
+						      Header->HeaderSize);
+	Context->NumberOfTag = Header->NumberOfTag;
+	Context->TagDirectorySize = TagDirectorySize;
+	Context->Payload = (UINT8 *)Context->TagDirectory +
+			   Header->TagDirectorySize;
+	Context->PayloadSize = SignatureSize - Header->HeaderSize -
+			       TagDirectorySize;
 	Context->Signature = Signature;
 	Context->SignatureSize = SignatureSize;
-	Context->Payload = Signature;
-	Context->PayloadSize = SignatureSize;
-	Context->Flags = 0;
+
+	return EFI_SUCCESS;
+}
+
+STATIC EFI_STATUS
+ParseTagDirectory(SEL_SIGNATURE_CONTEXT *Context)
+{
+	SEL_SIGNATURE_TAG *TagDirectory;
+	EFI_STATUS Status = EFI_SUCCESS;
+
+	TagDirectory = Context->TagDirectory;
+	for (UINTN Index = 0; Index < Context->NumberOfTag; ++Index) {
+		if (TagDirectory[Index].DataOffset +
+		    TagDirectory[Index].DataSize > Context->PayloadSize) {
+			EfiConsolePrintError(L"Invalid tag size or offset\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		switch (TagDirectory[Index].Tag) {
+		case SelSignatureTagContent:
+			Context->Content = Context->Payload +
+					   TagDirectory[Index].DataOffset;
+			Context->ContentSize = TagDirectory[Index].DataSize;
+			break;
+		case SelSignatureTagHashAlgorithm:
+		{
+			if (TagDirectory[Index].DataSize !=
+			    sizeof(SEL_SIGNATURE_HASH_ALGORITHM)) {
+				EfiConsolePrintError(L"Invalid size of hash "
+						     L"algorithm\n");
+				return EFI_UNSUPPORTED;
+			}
+
+			SEL_SIGNATURE_HASH_ALGORITHM HashAlg =
+			  *(SEL_SIGNATURE_HASH_ALGORITHM *)(Context->Payload +
+				TagDirectory[Index].DataOffset);
+			Status = ParseHashAlgorithm(HashAlg, Context);
+			if (EFI_ERROR(Status))
+				return Status;
+			break;
+		}
+		case SelSignatureTagSignatureAlgorithm:
+		case SelSignatureTagSignature:
+		case SelSignatureTagCreationTime:
+		case SelSignatureTagFileName:
+		case SelSignatureTagFileSize:
+			break;
+		}
+	}
+
+	return EFI_SUCCESS;
+}
+
+STATIC EFI_STATUS
+VerifySelSignature(SEL_SIGNATURE_CONTEXT *Context, VOID **Data, UINTN *DataSize)
+{
+	EFI_STATUS Status = EFI_SUCCESS;
+
+	if (Context->HashAlgorithm) {
+		if (!*Data || !*DataSize) {
+			EfiConsolePrintError(L"No data to be verified for "
+					     L"hash calculation\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		if (!Context->Content) {
+			EfiConsolePrintError(L"Invalid content for hash "
+					     L"calculation\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		UINTN HashSize;
+
+		Status = EfiHashSize(Context->HashAlgorithm, &HashSize);
+		if (EFI_ERROR(Status))
+			return Status;
+
+		if (Context->ContentSize != HashSize) {
+			EfiConsolePrintError(L"Invalid content size\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		UINT8 *Hash;
+		Status = EfiHashData(Context->HashAlgorithm, *Data, *DataSize,
+				     &Hash, &HashSize);
+		if (EFI_ERROR(Status))
+			return Status;
+
+		if (MemCmp(Hash, Context->Content, HashSize)) {
+			EfiConsolePrintError(L"Invalid content for hash "
+					     L"comparison\n");
+			EfiMemoryFree(Hash);
+			return EFI_SECURITY_VIOLATION;
+		}
+
+		EfiConsolePrintDebug(L"Consistent hash comparison with "
+				     L"SELoader signature\n");
+	} else {
+		if (*Data || *DataSize)
+			EfiConsolePrintDebug(L"Ignore the input data\n");
+
+		if (!Context->Content || !Context->ContentSize) {
+			EfiConsolePrintError(L"Invalid content for returning "
+					     L"the data\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		Status = EfiMemoryAllocate(Context->ContentSize, Data);
+		if (!EFI_ERROR(Status)) {
+			*DataSize = Context->ContentSize;
+			MemCpy(*Data, Context->Content, *DataSize);
+			EfiConsolePrintDebug(L"Content attached in SELoader "
+					     L"signature\n");
+			return EFI_SUCCESS;
+		}
+	}
+
+	return Status;
+}
+
+STATIC EFI_STATUS
+ParseSelSignature(UINT8 *Signature, UINTN SignatureSize,
+		  SEL_SIGNATURE_CONTEXT *Context)
+{
+	EFI_STATUS Status;
+
+	InitContext(Context);
+
+	Status = ParseHeader(Signature, SignatureSize, Context);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	Status = ParseTagDirectory(Context);
+	if (EFI_ERROR(Status))
+		return Status;
 
 	return EFI_SUCCESS;
 }
@@ -80,10 +312,12 @@ EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
 		return Status;
 	}
 
-	*Data = SignatureContext.Payload;
-	*DataSize = SignatureContext.PayloadSize;
+	Status = VerifySelSignature(&SignatureContext, Data, DataSize);
+	EfiMemoryFree(SelSignature);
+	if (EFI_ERROR(Status))
+		return Status;
 
-	return Status;
+	return EFI_SUCCESS;
 }
 
 EFI_STATUS

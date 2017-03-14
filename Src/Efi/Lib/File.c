@@ -205,10 +205,14 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	if (!Path || !Data || !DataSize)
 		return EFI_INVALID_PARAMETER;
 
+	EfiConsoleTraceDebug(L"Attempting to load the file %s ...", Path);
+
 	BOOLEAN CheckSignature;
 	EFI_STATUS Status;
 
 	CheckSignature = LoadSignatureRequired(Path);
+	EfiConsoleTraceDebug(L"Signature verification is %srequired",
+			     CheckSignature == TRUE ? L"" : L"not ");
 	if (CheckSignature == FALSE) {
 		Status = LoadFile(Path, NULL, Data, DataSize);
 		/*
@@ -217,10 +221,12 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		 */
 		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
 			return Status;
+
+		EfiConsolePrintDebug(L"Not found the file %s", Path);
 	}
 
-	EfiConsolePrintDebug(L"Attempting to load the attached signature "
-			     L"file %s.p7a %s...\n", Path,
+	EfiConsoleTraceDebug(L"Attempting to load the attached signature "
+			     L"file %s.p7a %s...", Path,
 			     CheckSignature == TRUE ? L"" :
 						      L"for the extracted "
 						      L"content ");
@@ -230,15 +236,39 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 	Status = LoadFile(Path, L".p7a", &Signature, &SignatureSize);
 	if (!EFI_ERROR(Status)) {
+		Status = LoadFile(Path, NULL, Data, DataSize);
+		if (EFI_ERROR(Status)) {
+			if (Status == EFI_NOT_FOUND) {
+				*Data = NULL;
+				*DataSize = 0;
+			} else
+				return Status;
+		}
+
+		VOID *ExtractedData = *Data;
+		UINTN ExtractedDataSize = *DataSize;
+
 		Status = EfiSignatureVerifyAttached(Signature, SignatureSize,
-						    Data, DataSize);
+						    &ExtractedData,
+						    &ExtractedDataSize);
 		EfiMemoryFree(Signature);
 		if (!EFI_ERROR(Status)) {
-			Status = EfiFileSave(Path, *Data, *DataSize);
-			if (!EFI_ERROR(Status))
-				return Status;
+			if (ExtractedData == *Data &&
+			    ExtractedDataSize == *DataSize)
+				return EFI_SUCCESS;
 
-			EfiMemoryFree(*Data);
+			if (*Data)
+				EfiMemoryFree(*Data);
+
+			Status = EfiFileSave(Path, ExtractedData,
+					     ExtractedDataSize);
+			if (!EFI_ERROR(Status)) {
+				*Data = ExtractedData;
+				*DataSize = ExtractedDataSize;
+				return Status;
+			}
+
+			EfiMemoryFree(ExtractedData);
 		}
 	}
 
@@ -247,7 +277,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		return Status;
 	}
 
-	EfiConsolePrintDebug(L"Attempting to load the detached signature "
+	EfiConsoleTraceDebug(L"Attempting to load the detached signature "
 			     L"file %s.p7s ...\n", Path);
 
 	Status = LoadFile(Path, L".p7s", &Signature, &SignatureSize);
@@ -270,6 +300,8 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	} else
 		EfiConsolePrintDebug(L"Failed to load the signature file "
 				     L"%s.p7a/.p7s\n", Path);
+
+	EfiConsoleTraceDebug(NULL, Path);
 
 	return Status;
 }

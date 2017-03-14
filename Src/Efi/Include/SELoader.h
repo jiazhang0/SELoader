@@ -34,26 +34,32 @@
 #pragma pack(1)
 
 #define SelSignatureRevision			1
+#define SelSigantureMagic			"SELS"
 
 typedef struct {
-	UINT8 Revision;		/* signature format version */
+	UINT32 Magic;
+	UINT8 Revision;		/* Signature format version */
 	UINT32 HeaderSize;
 	UINT32 TagDirectorySize;
 	UINT32 NumberOfTag;
+	UINT32 PayloadSize;
 	UINT32 Flags;
 } SEL_SIGNATURE_HEADER;
 
 typedef struct {
 	UINT32 Tag;
 	UINT8 Revision;
-	UINT8 Reserved[3];
+	UINT8 Reserved;
+	UINT16 Flags;
 	UINT32 DataOffset;
 	UINT32 DataSize;
 } SEL_SIGNATURE_TAG;
 
+/* Revision 0 is reserved for "current" revision */
 #define SelSignatureTagHashAlgorithm		1
 
 typedef enum {
+	SelHashAlgorithmNone,
 	SelHashAlgorithmSha1,
 	SelHashAlgorithmSha224,
 	SelHashAlgorithmSha256,
@@ -62,7 +68,6 @@ typedef enum {
 } SEL_SIGNATURE_HASH_ALGORITHM;
 
 typedef struct {
-	UINT8 Revision;
 	SEL_SIGNATURE_HASH_ALGORITHM Algorithm;
 } SEL_SIGNATURE_TAG_HASH_ALGORITHM;
 
@@ -73,24 +78,24 @@ typedef enum {
 } SEL_SIGNATURE_SIGNATURE_ALGORITHM;
 
 typedef struct {
-	UINT8 Revision;
 	SEL_SIGNATURE_SIGNATURE_ALGORITHM Algorithm;
 } SEL_SIGNATURE_TAG_SIGNATURE_ALGORITHM;
 
 #define SelSignatureTagSignature		3
 
 typedef struct {
-	UINT8 Revision;
 	UINT8 Signature[0];
 } SEL_SIGNATURE_TAG_SIGNATURE;
 
 #define SelSignatureTagSignaturePkcs7FlagsDetached	(1 << 0)
 
 typedef struct {
-	UINT8 Revision;
 	UINT32 Flags;
 	UINT8 Signature[0];
 } SEL_SIGNATURE_TAG_SIGNATURE_PKCS7;
+
+/* Content of message */
+#define SelSignatureTagContent			9
 
 #define SelSignatureTagCreationTime		10
 #define SelSignatureTagFileName			11
