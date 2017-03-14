@@ -65,7 +65,7 @@ LaunchLoader(VOID)
 
 	Status = EfiImageExecute(SELOADER_CHAINLOADER);
 
-	EfiConsoleTraceDebug(SELOADER_CHAINLOADER L" exited with 0x%x\n",
+	EfiConsoleTraceFault(SELOADER_CHAINLOADER L" exited with 0x%x\n",
 			     Status);
 
 	return Status;
