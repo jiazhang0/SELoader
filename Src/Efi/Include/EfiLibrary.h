@@ -208,6 +208,7 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 #define EfiConsolePrintFault(Format, ...)	\
 	do {	\
 		EfiConsolePrint(EFI_CPL_FAULT, Format, ##__VA_ARGS__);	\
+		while (1) {}	\
 	} while (0)
 
 UINTN
