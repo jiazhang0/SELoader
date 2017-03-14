@@ -62,7 +62,7 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	EfiConsolePrintLevel Level;
 
 	Status = EfiConsoleGetVerbosity(&Level);
-	if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG)
+	if (!EFI_ERROR(Status) && Level == CPL_DEBUG)
 		EfiSecurityPolicyPrint();
 
 	EfiConsoleTraceInfo(L"Traced on.\nPress any key to continue "

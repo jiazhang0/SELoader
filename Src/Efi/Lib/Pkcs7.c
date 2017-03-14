@@ -262,7 +262,7 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 		EfiConsolePrintLevel Level;
 
 		Status = EfiConsoleGetVerbosity(&Level);
-		if (!EFI_ERROR(Status) && Level == EFI_CPL_DEBUG)
+		if (!EFI_ERROR(Status) && Level == CPL_DEBUG)
 			Status = EfiMemoryAllocate(ExtractedContentSize,
 						   (VOID **)&ExtractedContent);
 

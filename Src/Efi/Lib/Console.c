@@ -30,9 +30,9 @@
 #include <EfiLibrary.h>
 
 #ifndef DEBUG_BUILD
-#  define CURRENT_CPL		EFI_CPL_INFO
+#  define CURRENT_CPL		CPL_INFO
 #else
-#  define CURRENT_CPL		EFI_CPL_DEBUG
+#  define CURRENT_CPL		CPL_DEBUG
 #endif
 
 STATIC EfiConsolePrintLevel CurrentConsolePrintLevel = CURRENT_CPL;
@@ -91,7 +91,7 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 EFI_STATUS
 EfiConsoleSetVerbosity(EfiConsolePrintLevel Level)
 {
-	if (Level < EFI_CPL_DEBUG || Level >= EFI_CPL_MAX)
+	if (Level < CPL_DEBUG || Level >= CPL_MAX)
 		return EFI_INVALID_PARAMETER;
 
 	CurrentConsolePrintLevel = Level;
@@ -105,8 +105,8 @@ EfiConsoleGetVerbosity(EfiConsolePrintLevel *Level)
 	if (!Level)
 		return EFI_INVALID_PARAMETER;
 
-	if (CurrentConsolePrintLevel < EFI_CPL_DEBUG ||
-	    CurrentConsolePrintLevel >= EFI_CPL_MAX)
+	if (CurrentConsolePrintLevel < CPL_DEBUG ||
+	    CurrentConsolePrintLevel >= CPL_MAX)
 		return EFI_INVALID_PARAMETER;
 
 	*Level = CurrentConsolePrintLevel;

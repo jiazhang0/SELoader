@@ -168,12 +168,12 @@ EFI_STATUS
 EfiDevicePathRootDirectory(CHAR16 **DirectoryPath);
 
 typedef enum {
-	EFI_CPL_DEBUG,
-	EFI_CPL_INFO,
-	EFI_CPL_WARNING,
-	EFI_CPL_ERROR,
-	EFI_CPL_FAULT,
-	EFI_CPL_MAX
+	CPL_DEBUG,
+	CPL_INFO,
+	CPL_WARNING,
+	CPL_ERROR,
+	CPL_FAULT,
+	CPL_MAX
 } EfiConsolePrintLevel;
 
 EFI_STATUS
@@ -187,27 +187,27 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 
 #define EfiConsolePrintDebug(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_DEBUG, Format, ##__VA_ARGS__);	\
+		EfiConsolePrint(CPL_DEBUG, Format, ##__VA_ARGS__);	\
 	} while (0)
 
 #define EfiConsolePrintInfo(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_INFO, Format, ##__VA_ARGS__);  \
+		EfiConsolePrint(CPL_INFO, Format, ##__VA_ARGS__);  \
 	} while (0)
 
 #define EfiConsolePrintWarning(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_WARNING, Format, ##__VA_ARGS__); \
+		EfiConsolePrint(CPL_WARNING, Format, ##__VA_ARGS__); \
 	} while (0)
 
 #define EfiConsolePrintError(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_ERROR, Format, ##__VA_ARGS__);	\
+		EfiConsolePrint(CPL_ERROR, Format, ##__VA_ARGS__);	\
 	} while (0)
 
 #define EfiConsolePrintFault(Format, ...)	\
 	do {	\
-		EfiConsolePrint(EFI_CPL_FAULT, Format, ##__VA_ARGS__);	\
+		EfiConsolePrint(CPL_FAULT, Format, ##__VA_ARGS__);	\
 		while (1) {}	\
 	} while (0)
 
@@ -216,27 +216,27 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 
 #define EfiConsoleTraceDebug(Format, ...)	\
 	do {	\
-		EfiConsoleTrace(EFI_CPL_DEBUG, Format, ##__VA_ARGS__);	\
+		EfiConsoleTrace(CPL_DEBUG, Format, ##__VA_ARGS__);	\
 	} while (0)
 
 #define EfiConsoleTraceInfo(Format, ...)	\
 	do {	\
-		EfiConsoleTrace(EFI_CPL_INFO, Format, ##__VA_ARGS__);  \
+		EfiConsoleTrace(CPL_INFO, Format, ##__VA_ARGS__);  \
 	} while (0)
 
 #define EfiConsoleTraceWarning(Format, ...)	\
 	do {	\
-		EfiConsoleTrace(EFI_CPL_WARNING, Format, ##__VA_ARGS__); \
+		EfiConsoleTrace(CPL_WARNING, Format, ##__VA_ARGS__); \
 	} while (0)
 
 #define EfiConsoleTraceError(Format, ...)	\
 	do {	\
-		EfiConsoleTrace(EFI_CPL_ERROR, Format, ##__VA_ARGS__); \
+		EfiConsoleTrace(CPL_ERROR, Format, ##__VA_ARGS__); \
 	} while (0)
 
 #define EfiConsoleTraceFault(Format, ...)	\
 	do {	\
-		EfiConsoleTrace(EFI_CPL_FAULT, Format, ##__VA_ARGS__); \
+		EfiConsoleTrace(CPL_FAULT, Format, ##__VA_ARGS__); \
 	} while (0)
 
 UINTN
