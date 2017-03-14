@@ -29,7 +29,13 @@
 #include <Efi.h>
 #include <EfiLibrary.h>
 
-STATIC EfiConsolePrintLevel CurrentConsolePrintLevel = EFI_CPL_DEBUG;
+#ifndef DEBUG_BUILD
+#  define CURRENT_CPL		EFI_CPL_INFO
+#else
+#  define CURRENT_CPL		EFI_CPL_DEBUG
+#endif
+
+STATIC EfiConsolePrintLevel CurrentConsolePrintLevel = CURRENT_CPL;
 
 STATIC UINTN
 ConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, VA_LIST Marker)
@@ -65,20 +71,20 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 		VA_END(Marker);
 	}
 
+	if (!OutputLength)
+		return 0;
+
 #ifdef TRACE_BUILD
 	CHAR16 Typed;
 	CHAR16 *Prompt;
 
-	if (Format)
-		Prompt = L" >>|\r\n";
-	else
-		Prompt = L">>|\r\n";
-
+	Prompt = L" >>|\r\n";
 	Input(Prompt, &Typed, 1);
 #else
 	/* The trace prompt usually doesn't end with \n */
 	OutputLength += EfiConsolePrint(Level, L"\n");
 #endif
+
 	return OutputLength;
 }
 
