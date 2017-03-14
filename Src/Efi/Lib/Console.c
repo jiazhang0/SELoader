@@ -70,9 +70,9 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 	CHAR16 *Prompt;
 
 	if (Format)
-		Prompt = L" >>|\n";
+		Prompt = L" >>|\r\n";
 	else
-		Prompt = L">>|\n";
+		Prompt = L">>|\r\n";
 
 	Input(Prompt, &Typed, 1);
 #endif
