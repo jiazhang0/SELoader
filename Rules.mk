@@ -7,8 +7,7 @@ SUFFIXES += .efi .efi.signed
 
 %.so: %.o
 	$(LD) $(LDFLAGS) -o $@ --start-group $^ \
-	    $(shell $(CC) -print-libgcc-file-name) \
-	    -lgnuefi -lefi --end-group
+	    $(LIB_GCC) -lgnuefi -lefi --end-group
 	@echo '--------------- List unresolved symbols ---------------'
 	@! $(NM) $@ | grep -iw u
 	@echo '-------------------------------------------------------'

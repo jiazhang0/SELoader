@@ -1,7 +1,7 @@
 include $(TOPDIR)/Env.mk
 include $(TOPDIR)/Rules.mk
 
-ARCH = $(shell $(CC) -dumpmachine | cut -f1 -d- | sed s,i[3456789]86,i386,)
+ARCH ?= $(shell $(CC) -dumpmachine | cut -f1 -d- | sed s,i[3456789]86,i386,)
 
 # XXX: __attribute__((ms_abi)) is only available since gcc 4.7
 CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \

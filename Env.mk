@@ -26,6 +26,7 @@ includedir ?= $(prefix)/include
 
 gnuefi_libdir ?= $(libdir)
 
+LIB_GCC ?= $(shell $(CC) -print-libgcc-file-name)
 LDFLAGS := --warn-common --no-undefined --fatal-warnings \
 	   $(patsubst $(join -Wl,,)%,%,$(EXTRA_LDFLAGS))
 CFLAGS := -std=gnu11 -Wall -Wsign-compare -Werror \
