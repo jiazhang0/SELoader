@@ -28,6 +28,10 @@ the SELoader resides on ESP.
 You can build the Pkcs7VerifyDxe.efi driver from the scratch if you would
 like to do it. Refer to Bin/README for the instructions.
 
+Known Issues
+------------
+- The PKCS#7 detached signature format (.p7s) is not supported.
+
 References
 ----------
 shim - implement MOK Secure Boot
