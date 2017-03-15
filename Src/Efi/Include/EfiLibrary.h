@@ -262,7 +262,10 @@ EFI_STATUS
 EfiImageExecuteSecure(CONST CHAR16 *Path);
 
 EFI_STATUS
-EfiImageLoadDriver(CONST CHAR16 *Path);
+EfiImageExecuteDriver(CONST CHAR16 *Path);
+
+EFI_STATUS
+EfiImageLoad(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize);
 
 VOID
 EfiResetSystemWarm(VOID);

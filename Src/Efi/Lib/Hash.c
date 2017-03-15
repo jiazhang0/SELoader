@@ -55,7 +55,7 @@ STATIC EFI_HASH_PROTOCOL *HashProtocol;
 STATIC EFI_STATUS
 LoadHash2DxeCrypto(VOID)
 {
-	EFI_STATUS Status = EfiImageLoadDriver(L"Hash2DxeCrypto.efi");
+	EFI_STATUS Status = EfiImageExecuteDriver(L"Hash2DxeCrypto.efi");
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Unable to load Hash2DxeCrypto driver "
 				     L"(err: 0x%x)\n", Status);

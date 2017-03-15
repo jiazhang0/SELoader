@@ -98,7 +98,7 @@ InitializePkcs7(VOID)
 	EfiConsoleTraceDebug(L"Pkcs7Verify protocol not installed by BIOS.\n"
 			     L"Attempting to load Pkcs7VerifyDxe driver ...");
 
-	Status = EfiImageLoadDriver(L"Pkcs7VerifyDxe.efi");
+	Status = EfiImageExecuteDriver(L"Pkcs7VerifyDxe.efi");
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Unable to load Pkcs7VerifyDxe driver "
 				     L"(err: 0x%x)\n", Status);

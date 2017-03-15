@@ -37,8 +37,8 @@ EFI_GUID gEfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 #endif
 
 STATIC EFI_STATUS
-Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
-	BOOLEAN Unload)
+LoadImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
+	  EFI_HANDLE *ImageHandle)
 {
 	EFI_LOADED_IMAGE *LoadedImage;
 	EFI_STATUS Status = EfiProtocolOpen(gThisImage,
@@ -67,9 +67,10 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 		return Status;
 	}	
 
-	EFI_HANDLE ImageHandle;
+	EFI_HANDLE LoadedImageHandle;
+
         Status = gBS->LoadImage(FALSE, gThisImage, DevicePath, ImageBuffer,
-				ImageBufferSize, &ImageHandle);
+				ImageBufferSize, &LoadedImageHandle);
 	EfiMemoryFree(DevicePath);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to load the image "
@@ -77,8 +78,27 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 		return Status;
 	}
 
+	if (ImageHandle)
+		*ImageHandle = LoadedImageHandle;
+	else
+		gBS->UnloadImage(LoadedImageHandle);
+
+	return EFI_SUCCESS;
+}
+
+STATIC EFI_STATUS
+ExecuteImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
+	     BOOLEAN Unload)
+{
 	EfiConsolePrintDebug(L"Preparing to start the image %s ...\n",
 			     Path);
+
+	EFI_HANDLE ImageHandle;
+	EFI_STATUS Status;
+
+	Status = LoadImage(Path, ImageBuffer, ImageBufferSize, &ImageHandle);
+	if (EFI_ERROR(Status))
+		return Status;
 
 	Status = gBS->StartImage(ImageHandle, NULL, NULL);
 	if (!EFI_ERROR(Status))
@@ -94,15 +114,21 @@ Execute(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 }
 
 EFI_STATUS
-EfiImageLoadDriver(CONST CHAR16 *Path)
+EfiImageExecuteDriver(CONST CHAR16 *Path)
 {
-	return Execute(Path, NULL, 0, FALSE);
+	return ExecuteImage(Path, NULL, 0, FALSE);
 }
 
 EFI_STATUS
 EfiImageExecute(CONST CHAR16 *Path)
 {
-	return Execute(Path, NULL, 0, TRUE);
+	return ExecuteImage(Path, NULL, 0, TRUE);
+}
+
+EFI_STATUS
+EfiImageLoad(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize)
+{
+	return LoadImage(Path, ImageBuffer, ImageBufferSize, NULL);
 }
 
 EFI_STATUS
@@ -154,5 +180,5 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 
 	EfiConsolePrintDebug(L"Attempting to load the image %s ...\n", Path);
 
-	return Execute(Path, Data, DataSize, TRUE);
+	return ExecuteImage(Path, Data, DataSize, TRUE);
 }
