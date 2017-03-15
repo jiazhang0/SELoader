@@ -35,7 +35,7 @@ CFLAGS := -std=gnu11 -Wall -Wsign-compare -Werror \
 	  $(EXTRA_CFLAGS) $(addprefix $(join -Wl,,),$(LDFLAGS))
 
 SIGNING_KEY ?= $(TOPDIR)/Key/efi_sb_keys/DB.key
-SIGNING_CERT ?= $(TOPDIR)/Key/efi_sb_key/DB.pem
+SIGNING_CERT ?= $(TOPDIR)/Key/efi_sb_keys/DB.pem
 
 ifneq ($(DEBUG_BUILD),)
 	CFLAGS += -ggdb -DDEBUG_BUILD
