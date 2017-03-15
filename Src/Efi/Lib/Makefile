@@ -17,7 +17,7 @@ OBJS_$(LIB_NAME) := \
 	Signature.o \
 	SecurityPolicy.o \
 	UefiSecureBoot.o \
-	MokVerify.o \
+	Mok2Verify.o \
 	SelSecureBoot.o \
 	EfiLibrary.o
 
@@ -27,12 +27,12 @@ LIBS_$(LIB_NAME) := \
 all: $(LIB_TARGET) $(LIBS_$(LIB_NAME)) Makefile
 
 clean:
-	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
+	@$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 	    $(addsuffix .*, $(LIB_TARGET))
-	$(MAKE) -C BaseLibrary clean
+	@$(MAKE) -C BaseLibrary clean
 
 $(LIB_TARGET): $(OBJS_$(LIB_NAME))
 	$(AR) rcs $@ $^
 
 BaseLibrary/libBaseLibrary.a:
-	$(MAKE) -C BaseLibrary
+	@$(MAKE) -C BaseLibrary

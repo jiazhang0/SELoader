@@ -25,7 +25,9 @@ SUFFIXES += .efi .efi.signed
 	    -j .rela* -j .reloc -j .eh_frame \
 	    --target efi-app-$(ARCH) $^ $@
 
-%.efi.signed: %.efi $(SIGNING_KEY) $(SIGNING_CERT)
-	@$(SBSIGN) --cert "$(SIGNING_CERT)" \
-	    --key "$(SIGNING_KEY)" \
-	    $< 2>/dev/null || echo "failed to sign $<" && echo "$< signed"
+%.efi.signed: %.efi $(SIGNING_CERT) $(SIGNING_KEY)
+	$(SBSIGN) --cert $(SIGNING_CERT) \
+	    --key $(SIGNING_KEY) $< 2>/dev/null || { \
+	        echo "failed to sign $<"; \
+                exit 1; \
+	    }

@@ -8,6 +8,7 @@ INSTALL ?= install
 OPENSSL ?= openssl
 GIT ?= git
 SBSIGN ?= sbsign
+RM ?= rm
 
 EXTRA_CFLAGS ?=
 EXTRA_LDFLAGS ?=

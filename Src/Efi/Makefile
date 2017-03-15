@@ -50,16 +50,17 @@ OBJS_$(EFI_NAME) := \
 all: $(EFI_TARGET).signed Makefile
 
 install: all
-	cp -f $^ $(EFI_DESTDIR)
+	@cp -f $^ $(EFI_DESTDIR)
 
 clean:
-	$(RM) $(EFI_TARGET) $(OBJS_$(EFI_NAME)) *.so *.debug BuildInfo.c
-	$(MAKE) -C $(LIB_DIR) clean
+	@$(RM) -f $(EFI_TARGET).signed $(EFI_TARGET) $(OBJS_$(EFI_NAME)) \
+	    *.so *.debug BuildInfo.c
+	@$(MAKE) -C $(LIB_DIR) clean
 
 $(EFI_TARGET).signed: $(EFI_TARGET)
 
 $(LIB_TARGETS):
-	$(MAKE) -C $(LIB_DIR)
+	@$(MAKE) -C $(LIB_DIR)
 
 $(EFI_NAME).so: $(OBJS_$(EFI_NAME)) $(LIB_TARGETS)
 

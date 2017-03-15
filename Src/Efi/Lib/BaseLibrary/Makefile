@@ -23,7 +23,7 @@ OBJS_$(LIB_NAME) := \
 all: $(LIB_TARGET) Makefile
 
 clean:
-	$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
+	@$(RM) $(LIB_TARGET) $(OBJS_$(LIB_NAME)) \
 	    $(addsuffix .*, $(LIB_TARGET))
 
 $(LIB_TARGET): $(OBJS_$(LIB_NAME))
