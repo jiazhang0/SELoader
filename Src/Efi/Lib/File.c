@@ -200,31 +200,9 @@ LoadSignatureRequired(CONST CHAR16 *Path)
 }
 
 EFI_STATUS
-EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
+EfiLoadSignature(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize,
+		 BOOLEAN CheckSignature)
 {
-	if (!Path || !Data || !DataSize)
-		return EFI_INVALID_PARAMETER;
-
-	EfiConsoleTraceDebug(L"Attempting to load the file %s ...", Path);
-
-	BOOLEAN CheckSignature;
-	EFI_STATUS Status;
-
-	CheckSignature = LoadSignatureRequired(Path);
-	EfiConsoleTraceDebug(L"Signature verification is %srequired",
-			     CheckSignature == TRUE ? L"" : L"not ");
-	if (CheckSignature == FALSE) {
-		Status = LoadFile(Path, NULL, Data, DataSize);
-		/*
-		 * Extract the content from .p7a if the specified file
-		 * doesn't exist.
-		 */
-		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
-			return Status;
-
-		EfiConsolePrintDebug(L"Not found the file %s", Path);
-	}
-
 	EfiConsoleTraceDebug(L"Attempting to load the attached signature "
 			     L"file %s.p7a %s...", Path,
 			     CheckSignature == TRUE ? L"" :
@@ -233,6 +211,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 	VOID *Signature;
 	UINTN SignatureSize;
+	EFI_STATUS Status;
 
 	Status = LoadFile(Path, L".p7a", &Signature, &SignatureSize);
 	if (!EFI_ERROR(Status)) {
@@ -301,7 +280,38 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		EfiConsolePrintDebug(L"Failed to load the signature file "
 				     L"%s.p7a/.p7s\n", Path);
 
-	EfiConsoleTraceDebug(NULL, Path);
+	return Status;
+}
+
+EFI_STATUS
+EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
+{
+	if (!Path || !Data || !DataSize)
+		return EFI_INVALID_PARAMETER;
+
+	EfiConsoleTraceDebug(L"Attempting to load the file %s ...", Path);
+
+	BOOLEAN CheckSignature;
+	EFI_STATUS Status;
+
+	CheckSignature = LoadSignatureRequired(Path);
+	EfiConsoleTraceDebug(L"Signature verification is %srequired",
+			     CheckSignature == TRUE ? L"" : L"not ");
+	if (CheckSignature == FALSE) {
+		Status = LoadFile(Path, NULL, Data, DataSize);
+		/*
+		 * Extract the content from .p7a if the specified file
+		 * doesn't exist.
+		 */
+		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
+			return Status;
+
+		EfiConsolePrintDebug(L"Not found the file %s", Path);
+	}
+
+	Status = EfiLoadSignature(Path, Data, DataSize, CheckSignature);
+
+	EfiConsoleTraceDebug(NULL);
 
 	return Status;
 }
