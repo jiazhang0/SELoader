@@ -29,7 +29,6 @@
 #include <Efi.h>
 #include <EfiLibrary.h>
 #include <BaseLibrary.h>
-#include <MokSecureBoot.h>
 
 #if GNU_EFI_VERSION <= 303
 EFI_GUID gEfiGlobalVariableGuid = EFI_GLOBAL_VARIABLE;

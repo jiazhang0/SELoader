@@ -26,17 +26,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EFI_MOK_SECURE_BOOT_H
-#define EFI_MOK_SECURE_BOOT_H
+#ifndef EFI_MOK_VERIFY_H
+#define EFI_MOK_VERIFY_H
 
 #include <Efi.h>
 
-#define MOK_SECURE_BOOT_PROTOCOL_GUID	\
+#define EFI_MOK_VERIFY_PROTOCOL_GUID	\
 {	\
 	0x605dab50, 0xe046, 0x4300,	\
 	{ 0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23 }	\
 }
 
-extern EFI_GUID gMokSecureBootProtocolGuid;
+extern EFI_GUID gEfiMokVerifyProtocolGuid;
 
-#endif	/* EFI_MOK_SECURE_BOOT_H */
+#endif	/* EFI_MOK_VERIFY_H */

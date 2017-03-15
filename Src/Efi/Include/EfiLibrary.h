@@ -30,7 +30,7 @@
 #define EFI_LIBRARY_H
 
 #include <Efi.h>
-#include <MokSecureBoot.h>
+#include <MokVerify.h>
 #include <SelSecureBoot.h>
 
 extern EFI_HANDLE gThisImage;
@@ -86,7 +86,7 @@ STATIC inline EFI_STATUS
 EfiVariableReadMok(CONST CHAR16 *VariableName, UINT32 *Attributes,
 		   VOID **Data, UINTN *DataSize)
 {
-	return EfiVariableRead(VariableName, &gMokSecureBootProtocolGuid,
+	return EfiVariableRead(VariableName, &gEfiMokVerifyProtocolGuid,
 			       Attributes, Data, DataSize);
 }
 
@@ -122,7 +122,7 @@ STATIC inline EFI_STATUS
 EfiVariableWriteMok(CONST CHAR16 *VariableName, UINT32 Attributes,
 		    VOID *Data, UINTN DataSize)
 {
-	return EfiVariableWrite(VariableName, &gMokSecureBootProtocolGuid,
+	return EfiVariableWrite(VariableName, &gEfiMokVerifyProtocolGuid,
 				Attributes, Data, DataSize);
 }
 
@@ -152,7 +152,7 @@ EfiVariableDeleteSecure(CONST CHAR16 *VariableName)
 STATIC inline EFI_STATUS
 EfiVariableDeleteMok(CONST CHAR16 *VariableName)
 {
-	return EfiVariableDelete(VariableName, &gMokSecureBootProtocolGuid);
+	return EfiVariableDelete(VariableName, &gEfiMokVerifyProtocolGuid);
 }
 
 STATIC inline EFI_STATUS

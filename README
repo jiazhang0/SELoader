@@ -2,7 +2,7 @@ Secure EFI Loader
 =================
 
 The SELoader is designed to authenticate the non-PE files which cannot
-be verified by the protocol supplied by MOK Secure Boot, such as grub
+be verified by the MOK verify protocol supplied by shim loader, such as grub
 configuration, initrd, grub modules and so on.
 
 The SELoader employs PKCS7 Verify Protocol available since UEFI Specification
@@ -14,8 +14,8 @@ signed by a private key corresponding to a DB certificate, the shim
 certificate, the vendor certificate or a shim MOK certificate. The specifical
 key is determined by the Secure Boot scheme you will use.
 
-Using UEFI Secure Boot, MOK Secure Boot and SELoader Secure Boot together, the
-boot process will be completely trustworthy.
+Using UEFI Secure Boot, MOK verify protocol and SELoader Secure Boot together,
+the boot process will be completely trustworthy.
 
 Use Pkcs7VerifyDxe.efi
 ----------------------
@@ -34,7 +34,7 @@ Known Issues
 
 References
 ----------
-shim - implement MOK Secure Boot
+shim - implement MOK verify protocol
 https://github.com/rhinstaller/shim
 
 edk2 - UEFI-related header files

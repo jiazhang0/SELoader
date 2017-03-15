@@ -28,6 +28,6 @@
 
 #include <Efi.h>
 #include <EfiLibrary.h>
-#include <MokSecureBoot.h>
+#include <MokVerify.h>
 
-EFI_GUID gMokSecureBootProtocolGuid = MOK_SECURE_BOOT_PROTOCOL_GUID;
+EFI_GUID gEfiMokVerifyProtocolGuid = EFI_MOK_VERIFY_PROTOCOL_GUID;
