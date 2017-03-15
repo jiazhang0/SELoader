@@ -26,28 +26,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EFI_H
-#define EFI_H
+#ifndef EFI_MOK2_VERIFY_H
+#define EFI_MOK2_VERIFY_H
 
-#include <Edk2/Base.h>
-#include <Edk2/Uefi.h>
+#include <Efi.h>
 
-#include <Edk2/Guid/GlobalVariable.h>
-#include <Edk2/Guid/ImageAuthentication.h>
-#include <Edk2/Guid/FileInfo.h>
-#include <Edk2/Protocol/SimpleTextIn.h>
-#include <Edk2/Protocol/LoadedImage.h>
-#include <Edk2/Protocol/SimpleFileSystem.h>
-#include <Edk2/Protocol/ServiceBinding.h>
-#include <Edk2/Protocol/Hash2.h>
-#include <Edk2/Protocol/Hash.h>
-#include <Edk2/Protocol/Pkcs7Verify.h>
-#include <Edk2/Library/UefiBootServicesTableLib.h>
-#include <Edk2/Library/UefiRuntimeServicesTableLib.h>
-#include <Edk2/Library/PeCoffLib.h>
+#define EFI_MOK2_VERIFY_PROTOCOL_GUID	\
+{	\
+	0x4eda73ad, 0x07aa, 0x4b7a,	\
+	{ 0xa1, 0x91, 0xd4, 0xd4, 0x10, 0xfb, 0x8c, 0xb4 }	\
+}
 
-#ifdef GNU_EFI_VERSION
-#include <GnuEfi.h>
-#endif
+typedef struct _EFI_MOK2_VERIFY_PROTOCOL	EFI_MOK2_VERIFY_PROTOCOL;
 
-#endif	/* EFI_H */
+typedef
+EFI_STATUS
+(EFIAPI *EFI_MOK2_VERIFY_FILE) (
+  IN EFI_MOK2_VERIFY_PROTOCOL *This,
+  IN CONST CHAR16             *Path,
+  OUT VOID                    **Data,
+  OUT UINTN                   *DataSize
+  );
+
+typedef
+EFI_STATUS
+(EFIAPI *EFI_MOK2_VERIFY_BUFFER) (
+  IN EFI_MOK2_VERIFY_PROTOCOL *This,
+  IN VOID                     *Data,
+  IN UINTN                    DataSize,
+  IN CONST CHAR16             *Path
+  );
+
+struct _EFI_MOK2_VERIFY_PROTOCOL {
+        UINT8 Revision;
+        EFI_MOK2_VERIFY_FILE VerifyFILE;
+        EFI_MOK2_VERIFY_BUFFER VerifyBuffer;
+};
+
+extern EFI_GUID gEfiMok2VerifyProtocolGuid;
+
+#endif	/* EFI_MOK2_VERIFY_H */

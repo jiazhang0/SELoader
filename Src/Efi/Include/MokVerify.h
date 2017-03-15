@@ -37,6 +37,40 @@
 	{ 0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23 }	\
 }
 
+typedef struct _EFI_MOK_VERIFY_PROTOCOL	EFI_MOK_VERIFY_PROTOCOL;
+
+typedef
+EFI_STATUS
+(*EFI_MOK_VERIFY_IMAGE) (
+  IN VOID *Buffer,
+  IN UINT32 BufferSize
+  );
+
+typedef
+EFI_STATUS
+(*EFI_MOK_HASH) (
+  IN UINT8                     *Data,
+  IN UINTN                     DataSize,
+  PE_COFF_LOADER_IMAGE_CONTEXT *Context,
+  UINT8                        *Sha256Hash,
+  UINT8                        *Sha1Hash
+  );
+
+typedef
+EFI_STATUS
+(*EFI_MOK_CONTEXT) (
+  IN EFI_MOK_VERIFY_PROTOCOL      *This,
+  IN VOID                         *Data,
+  IN UINTN                        DataSize,
+  IN PE_COFF_LOADER_IMAGE_CONTEXT *Context
+  );
+
+struct _EFI_MOK_VERIFY_PROTOCOL {
+        EFI_MOK_VERIFY_IMAGE Verify;
+        EFI_MOK_HASH Hash;
+        EFI_MOK_CONTEXT Context;
+};
+
 extern EFI_GUID gEfiMokVerifyProtocolGuid;
 
 #endif	/* EFI_MOK_VERIFY_H */
