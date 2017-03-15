@@ -60,6 +60,9 @@ EfiProtocolLocateHandles(CONST EFI_GUID *Protocol, EFI_HANDLE **HandleBuffer,
 			 UINTN *Handles);
 
 EFI_STATUS
+EfiProtocolInstall(EFI_HANDLE *Handle, EFI_GUID *Protocol, VOID *Interface);
+
+EFI_STATUS
 EfiDeviceLocate(EFI_HANDLE *DeviceHandle);
 
 EFI_STATUS

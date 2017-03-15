@@ -55,3 +55,10 @@ EfiProtocolLocateHandles(CONST EFI_GUID *Protocol, EFI_HANDLE **HandleBuffer,
 	return gBS->LocateHandleBuffer(ByProtocol, (EFI_GUID *)Protocol, NULL,
 				       Handles, HandleBuffer);
 }
+
+EFI_STATUS
+EfiProtocolInstall(EFI_HANDLE *Handle, EFI_GUID *Protocol, VOID *Interface)
+{
+	return gBS->InstallProtocolInterface(Handle, Protocol,
+					     EFI_NATIVE_INTERFACE, Interface);
+}
