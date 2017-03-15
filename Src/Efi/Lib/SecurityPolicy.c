@@ -191,7 +191,10 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 
 		if (SignatureListSize)
 			*SignatureListSize = DataSize;
-	} else
+	} else if (Status == EFI_NOT_FOUND)
+		EfiConsolePrintDebug(L"The security policy object %s is "
+				     L"empty\n", Name);
+	else
 		EfiConsolePrintError(L"Failed to load the security policy "
 				     L"object %s (err: 0x%x)\n",
 				     Name, Status);

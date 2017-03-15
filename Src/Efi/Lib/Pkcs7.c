@@ -116,44 +116,32 @@ InitializePkcs7(VOID)
 	EFI_SIGNATURE_LIST *Db = NULL;
 	UINTN DbSize = 0;
 	Status = EfiSecurityPolicyLoad(L"db", &Db, &DbSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to load the security policy "
-				     L"object db\n");
+	if (EFI_ERROR(Status))
 		return Status;
-	}
 
 	EFI_SIGNATURE_LIST *MokList = NULL;
 	UINTN MokListSize = 0;
 	Status = EfiSecurityPolicyLoad(L"MokList", &MokList, &MokListSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to load the security policy "
-				     L"object MokList\n");
+	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadMokList;
-	}
 
 	EFI_SIGNATURE_LIST *Dbx = NULL;
 	UINTN DbxSize = 0;
 	Status = EfiSecurityPolicyLoad(L"dbx", &Dbx, &DbxSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to load the security policy "
-				     L"object dbx\n");
+	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadDbx;
-	}
 
 	EFI_SIGNATURE_LIST *MokListX = NULL;
 	UINTN MokListXSize = 0;
 	Status = EfiSecurityPolicyLoad(L"MokListX", &MokListX, &MokListXSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to load the security policy "
-				     L"object MokListX\n");
+	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadMokListX;
-	}
 
 	Status = MergeSignatureList(&AllowedDb, Db, DbSize, MokList,
 				    MokListSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to merge the allowed "
-				     L"database\n");
+				     L"database (err: 0x%x)\n");
 		goto ErrorMergeAllowedDb;
 	}
 
@@ -161,7 +149,7 @@ InitializePkcs7(VOID)
 				    MokListXSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to merge the revoked "
-				     L"database\n");
+				     L"database (err: 0x%x)\n");
 		goto ErrorMergeRevokedDb;
 	}	
 
