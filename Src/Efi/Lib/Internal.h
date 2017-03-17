@@ -49,4 +49,10 @@ EFI_STATUS
 Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 			     VOID *Signature, UINTN SignatureSize);
 
+EFI_STATUS
+MokSecureBootState(UINT8 *MokSBState);
+
+EFI_STATUS
+Mok2VerifyInitialize(VOID);
+
 #endif	/* __LIB_INTERNAL_H__ */

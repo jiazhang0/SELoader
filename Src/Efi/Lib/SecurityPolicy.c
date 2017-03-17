@@ -85,8 +85,11 @@ InitializeSecurityPolicy(VOID)
 		return EFI_INVALID_PARAMETER;
 	}
 
-	/* TODO: support MOK secure boot */
-	UINT8 MokSecureBoot = 0;
+	UINT8 MokSBState;
+
+	Status = MokSecureBootState(&MokSBState);
+	if (EFI_ERROR(Status))
+		return Status;
 
 	UINT8 SelSecureBoot = 0;
 	Status = SelSecureBootMode(&SelSecureBoot);
@@ -98,11 +101,12 @@ InitializeSecurityPolicy(VOID)
 	if (!SetupMode)
 		UefiSecureBootProvisioned = TRUE;
 
-	if (SecureBoot == 1)
+	if (SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
 
-	if (MokSecureBoot == 1)
-		MokSecureBootEnabled = TRUE;
+		if (MokSBState == 0)
+			MokSecureBootEnabled = TRUE;
+	}
 
 	/*
 	 * Enable SEL Secure Boot as long as UEFI Secure Boot already
@@ -121,6 +125,15 @@ InitializeSecurityPolicy(VOID)
 						     sizeof(SelSecureBoot));
 			if (EFI_ERROR(Status))
 				SelSecureBootEnabled = FALSE;
+		}
+
+		if (MokSecureBootEnabled == TRUE) {
+			Status = Mok2VerifyInitialize();
+			if (EFI_ERROR(Status)) {
+				MokSecureBootEnabled = FALSE;
+				EfiConsolePrintError(L"Assuming MOK Secure "
+						     L"Boot disabled\n");
+			}
 		}
 	}
 
