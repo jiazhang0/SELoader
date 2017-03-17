@@ -30,9 +30,12 @@
 #include <EfiLibrary.h>
 #include <SELoader.h>
 
+#define STRINGIFY(x)				#x
+
 #define SELOADER_CONFIGURATION			L"SELoader.conf"
+
 #ifndef SELOADER_CHAINLOADER
-#  define SELOADER_CHAINLOADER			L"grubx64.efi"
+#  define SELOADER_CHAINLOADER			L"grub" STRINGIFY(EFI_ARCH) L".efi"
 #endif
 
 STATIC EFI_STATUS
