@@ -39,6 +39,9 @@ CHAR16 *gRootPath;
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
+	if (!ImageHandle || !SystemTable)
+		return EFI_INVALID_PARAMETER;
+
 #ifdef GNU_EFI_VERSION
 	InitializeLib(ImageHandle, SystemTable);
 #endif
@@ -74,6 +77,9 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 VOID
 EfiLibraryHexDump(CONST CHAR16 *Prompt, UINT8 *Data, UINTN DataSize)
 {
+	if (DataSize && !Data)
+		return;
+
 	if (Prompt)
 		EfiConsolePrintDebug(L"%s (%d-byte): ", Prompt, DataSize);
 
