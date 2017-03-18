@@ -64,7 +64,9 @@ STATIC EFI_STATUS
 InitializeSecurityPolicy(VOID)
 {
 	UINT8 SetupMode;
-	EFI_STATUS Status = UefiSecureBootGetSetupMode(&SetupMode);
+	EFI_STATUS Status;
+
+	Status = UefiSecureBootGetSetupMode(&SetupMode);
 	if (EFI_ERROR(Status))
 		return Status;
 
@@ -72,6 +74,7 @@ InitializeSecurityPolicy(VOID)
 			     SetupMode ? L"Setup" : L"User");
 
 	UINT8 SecureBoot;
+
 	Status = UefiSecureBootGetStatus(&SecureBoot);
 	if (EFI_ERROR(Status))
 		return Status;
@@ -92,6 +95,7 @@ InitializeSecurityPolicy(VOID)
 		return Status;
 
 	UINT8 SelSecureBoot = 0;
+
 	Status = SelSecureBootMode(&SelSecureBoot);
 	if (EFI_ERROR(Status)) {
 		if (Status != EFI_NOT_FOUND)
@@ -165,8 +169,9 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 
 	EFI_SIGNATURE_LIST *Data = NULL;
 	UINTN DataSize = 0;
-	Status = EFI_INVALID_PARAMETER;
 	BOOLEAN Ignored = FALSE;
+
+	Status = EFI_INVALID_PARAMETER;
 
 	if (!StrCmp(Name, L"db") || !StrCmp(Name, L"dbx")) {
 		if (UefiSecureBootEnabled == TRUE)
@@ -226,6 +231,7 @@ EfiSecurityPolicyPrint(VOID)
 {
 	if (SecurityPolicyInitialized == FALSE) {
 		EFI_STATUS Status = InitializeSecurityPolicy();
+
 		if (EFI_ERROR(Status))
 			return;
 	}
