@@ -53,6 +53,9 @@ EFI_STATUS
 MokSecureBootState(UINT8 *MokSBState);
 
 EFI_STATUS
+MokVerifyProtocolInstalled(BOOLEAN *Installed);
+
+EFI_STATUS
 Mok2VerifyInitialize(VOID);
 
 #endif	/* __LIB_INTERNAL_H__ */

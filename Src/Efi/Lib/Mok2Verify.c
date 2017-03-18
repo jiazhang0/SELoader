@@ -34,13 +34,33 @@
 EFI_GUID gEfiMokVerifyProtocolGuid = EFI_MOK_VERIFY_PROTOCOL_GUID;
 EFI_GUID gEfiMok2VerifyProtocolGuid = EFI_MOK2_VERIFY_PROTOCOL_GUID;
 
-STATIC EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
 STATIC EFI_HANDLE Mok2VerifyHandle;
-STATIC BOOLEAN MokSecureBootEnabled = FALSE;
+
+EFI_STATUS
+MokVerifyProtocolInstalled(BOOLEAN *Installed)
+{
+	if (!Installed)
+		return EFI_INVALID_PARAMETER;
+
+	EFI_STATUS Status;
+
+	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid, NULL);
+	if (EFI_ERROR(Status)) {
+		*Installed = FALSE;
+		return Status;
+	}
+
+	*Installed = TRUE;
+
+        return EFI_SUCCESS;
+}
 
 EFI_STATUS
 MokSecureBootState(UINT8 *MokSBState)
 {
+	if (!MokSBState)
+		return EFI_INVALID_PARAMETER;
+
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*MokSBState);
 	EFI_STATUS Status;
@@ -48,34 +68,40 @@ MokSecureBootState(UINT8 *MokSBState)
 	Status = EfiVariableReadMok(L"MokSBState", &Attributes,
 				    (VOID **)&MokSBState, &VarSize);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Assuming MOK Secure Boot enabled\n");
+		if (Status == EFI_NOT_FOUND) {
+			*MokSBState = 0;
 
-		*MokSBState = 0;
-		return EFI_SUCCESS;
+			EfiConsolePrintDebug(L"Assuming MOK Secure Boot enabled\n");
+
+			return EFI_SUCCESS;
+		}
+
+		EfiConsolePrintError(L"Failed to read MokSBState "
+				     L"(err: 0x%x)\n", Status);
+
+		return Status;
 	}
 
+	Status = EFI_UNSUPPORTED;
+
 	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid MokSBState variable size "
-				     L"%d-byte\n", VarSize);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid size of MokSBState (%d-byte)\n",
+				     VarSize);
 		goto Err;
 	}
 
 	if (Attributes != EFI_VARIABLE_BOOTSERVICE_ACCESS) {
-		EfiConsolePrintError(L"Invalid MokSBState variable attribute "
-				     L"0x%x\n", Attributes);
+		EfiConsolePrintError(L"Invalid attribute of MokSBState "
+				     L"(0x%x)\n", Attributes);
 		Status = EFI_INVALID_PARAMETER;
 		goto Err;
 	}
 
 	if (*MokSBState != 0 && *MokSBState != 1) {
-		EfiConsolePrintError(L"Invalid MokSBState variable value "
-				     L"0x%x\n", *MokSBState);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid value of MokSBState (0x%x)\n",
+				     *MokSBState);
 		goto Err;
 	}
-
-	MokSecureBootEnabled = (*MokSBState == 0);
 
 	return EFI_SUCCESS;
 
@@ -95,20 +121,30 @@ Mok2VerifyBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Data,
 	EfiConsoleTraceDebug(L"Attempting to verify buffer %s by MOK2 Verify "
 			     L"Protoocl ...", Path);
 
-	if (MokSecureBootEnabled == FALSE) {
+	UINT8 MokSBState = 1;
+	EFI_STATUS Status;
+
+	Status = MokSecureBootState(&MokSBState);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	if (MokSBState == 1) {
 		EfiConsoleTraceDebug(L"Ignore to verify buffer for %s\n",
 				     Path);
 		return EFI_SUCCESS;
 	}
 
-	if (!MokVerifyProtocol) {
+	EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
+
+	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
+				   (VOID **)&MokVerifyProtocol);
+	if (EFI_ERROR(Status)) {
 		EfiConsoleTraceDebug(L"Attempt to verify buffer for %s with "
 				     L"LoadImage()\n", Path);
 		return EfiImageLoad(Path, Data, DataSize);
 	}
 
 	PE_COFF_LOADER_IMAGE_CONTEXT Context;
-	EFI_STATUS Status;
 
 	Status = MokVerifyProtocol->Context(MokVerifyProtocol, Data,
 					    DataSize, &Context);
@@ -166,7 +202,14 @@ Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path,
 	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
 			     L"Protoocl ...", Path);
 
-	if (MokSecureBootEnabled == FALSE) {
+	UINT8 MokSBState = 1;
+	EFI_STATUS Status;
+
+	Status = MokSecureBootState(&MokSBState);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	if (MokSBState == 1) {
 		EfiConsoleTraceDebug(L"Ignore to verify file %s\n", Path);
 		return EFI_SUCCESS;
 	}
@@ -184,21 +227,19 @@ EFI_STATUS
 Mok2VerifyInitialize(VOID)
 {
 	EfiConsoleTraceDebug(L"Attempting to initialize MOK2 Verify "
-			     L"Protoocl ...");
+			     L"Protocol ...");
 
+	UINT8 MokSBState = 1;
 	EFI_STATUS Status;
 
-        Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
-				   (VOID **)&MokVerifyProtocol);
+	Status = MokSecureBootState(&MokSBState);
         if (!EFI_ERROR(Status)) {
- 		if (MokSecureBootEnabled == FALSE) {
+		if (MokSBState == 1) {
         		EfiConsolePrintDebug(L"Ignore to install MOK2 Verify "
         				     L"Protocol\n");
         		return EFI_SUCCESS;
 		}	
-        } else 
-		EfiConsolePrintError(L"Failed to open MOK Verify Protocol"
-				     L"(err: 0x%x)\n", Status);
+        }
 
 	Status = EfiProtocolInstall(&Mok2VerifyHandle,
 				    &gEfiMok2VerifyProtocolGuid,
