@@ -39,8 +39,8 @@
 STATIC EFI_STATUS
 LoadConfig(VOID)
 {
-	VOID *Config;
-	UINTN ConfigSize;
+	VOID *Config = NULL;
+	UINTN ConfigSize = 0;
 	EFI_STATUS Status;
 
 	Status = EfiFileLoad(SELOADER_CONFIGURATION, &Config, &ConfigSize);

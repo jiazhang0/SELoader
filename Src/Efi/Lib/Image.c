@@ -141,8 +141,8 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 		return EFI_OUT_OF_RESOURCES;
 	}
 
-	VOID *Signature;
-	UINTN SignatureSize;
+	VOID *Signature = NULL;
+	UINTN SignatureSize = 0;
 	EFI_STATUS Status = EfiFileLoad(SignaturePath, &Signature,
 					&SignatureSize);
 	EfiMemoryFree(SignaturePath);
@@ -155,8 +155,8 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 	EfiConsolePrintDebug(L"The signature file %s loaded\n",
 			     SignaturePath);
 
-        VOID *Data;
-        UINTN DataSize;
+        VOID *Data = NULL;
+        UINTN DataSize = 0;
 	Status = EfiFileLoad(Path, &Data, &DataSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to load the file %s\n",

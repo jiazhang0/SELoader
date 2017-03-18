@@ -117,6 +117,10 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 	if (EFI_ERROR(Status))
 		goto ErrOnOpenFile;
 
+	/* Open testing */
+	if (!Data && !DataSize)
+		goto ErrOnOpenFile;
+
 	EFI_FILE_INFO *FileInfo;
 
 	FileInfo = LibFileInfo(FileHandle);
@@ -130,28 +134,39 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 	UINTN FileSize = (UINTN)FileInfo->FileSize;
 	EfiMemoryFree(FileInfo);
 
+	/* Request file size */
+	if (!Data && DataSize) {
+		*DataSize = FileSize;
+		goto ErrOnAllocFileBuffer;
+	}
+
 	VOID *FileBuffer = NULL;
 
 	if (FileSize) {
-		Status = EfiMemoryAllocate(FileSize, &FileBuffer);
-		if (EFI_ERROR(Status))
-			goto ErrOnAllocFileBuffer;
+		if (!*Data) {
+			/* Return truncated length */
+			if (*DataSize)
+				FileSize = *DataSize;
+
+			Status = EfiMemoryAllocate(FileSize, &FileBuffer);
+			if (EFI_ERROR(Status))
+				goto ErrOnAllocFileBuffer;
+		} else
+			FileBuffer = *Data;
 
 		Status = FileHandle->Read(FileHandle, &FileSize, FileBuffer);
 		if (EFI_ERROR(Status)) {
 			EfiConsolePrintError(L"Failed to read file %s "
 					     L"(err: 0x%x)\n", FilePath,
 					     Status);
-			EfiMemoryFree(FileBuffer);
+			if (!*Data)
+				EfiMemoryFree(FileBuffer);
 			goto ErrOnReadFileBuffer;
 		}
 	}
 
-	if (Data)
-		*Data = FileBuffer;
-
-	if (DataSize)
-		*DataSize = FileSize;
+	*Data = FileBuffer;
+	*DataSize = FileSize;
 
 	EfiConsolePrintDebug(L"File %s loaded (%d-byte)\n", FilePath,
 			     FileSize);
@@ -286,7 +301,13 @@ EfiLoadSignature(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize,
 EFI_STATUS
 EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 {
-	if (!Path || !Data || !DataSize)
+	if (!Path)
+		return EFI_INVALID_PARAMETER;
+
+	if (!Data && DataSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (Data && *Data && DataSize && !*DataSize)
 		return EFI_INVALID_PARAMETER;
 
 	EfiConsoleTraceDebug(L"Attempting to load the file %s ...", Path);
