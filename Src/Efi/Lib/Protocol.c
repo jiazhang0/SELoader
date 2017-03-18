@@ -32,9 +32,17 @@
 EFI_STATUS
 EfiProtocolOpen(EFI_HANDLE Handle, CONST EFI_GUID *Protocol, VOID **Interface)
 {
+	VOID *TempInterface;
+	VOID **pInterface;
+
+	if (!Interface)
+		pInterface = &TempInterface;
+	else
+		pInterface = Interface;
+
 	EFI_STATUS Status;
 
-	Status = gBS->HandleProtocol(Handle, (EFI_GUID *)Protocol, Interface);
+	Status = gBS->HandleProtocol(Handle, (EFI_GUID *)Protocol, pInterface);
 	if (EFI_ERROR(Status))
 		EfiConsolePrintError(L"Failed to open the protocol (err: %d)"
 				     L"\n", Status);
