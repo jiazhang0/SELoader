@@ -60,46 +60,45 @@ PrintSecurityPolicy(VOID)
 						   L"Disabled");
 }
 
-STATIC EFI_STATUS
+STATIC VOID
 InitializeSecurityPolicy(VOID)
 {
-	UINT8 SetupMode;
+	UINT8 SetupMode = 1;
 	EFI_STATUS Status;
 
 	Status = UefiSecureBootGetSetupMode(&SetupMode);
-	if (EFI_ERROR(Status))
-		return Status;
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"Platform firmware is in %s mode\n",
+				     SetupMode ? L"Setup" : L"User");
 
-	EfiConsolePrintDebug(L"Platform firmware is in %s mode\n",
-			     SetupMode ? L"Setup" : L"User");
-
-	UINT8 SecureBoot;
+	UINT8 SecureBoot = 0;
 
 	Status = UefiSecureBootGetStatus(&SecureBoot);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	EfiConsolePrintDebug(L"Platform firmware is %soperating in Secure "
-			     L"Boot mode\n", SecureBoot ? L"" : L"not ");
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"Platform firmware is %soperating in "
+				     L"Secure Boot mode\n", SecureBoot ?
+							    L"" : L"not ");
 
 	if (SetupMode && SecureBoot) {
 		EfiConsolePrintError(L"Platform firmware is in Setup mode but "
 				     L"SecureBoot is enabled\n");
-		return EFI_INVALID_PARAMETER;
+		SecureBoot = 0;
 	}
 
-	UINT8 MokSBState;
+	UINT8 MokSBState = 0;
 
 	Status = MokSecureBootState(&MokSBState);
-	if (EFI_ERROR(Status))
-		return Status;
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintDebug(L"Shim loader is %soperating in "
+				     L"MOK Secure Boot mode\n", !MokSBState ?
+								L"" : L"not ");
 
 	UINT8 SelSecureBoot = 0;
 
 	Status = SelSecureBootMode(&SelSecureBoot);
 	if (EFI_ERROR(Status)) {
 		if (Status != EFI_NOT_FOUND)
-			return Status;
+			return;
 	}
 
 	if (!SetupMode)
@@ -108,7 +107,7 @@ InitializeSecurityPolicy(VOID)
 	if (SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
 
-		if (MokSBState == 0)
+		if (!MokSBState)
 			MokSecureBootEnabled = TRUE;
 	}
 
@@ -142,8 +141,6 @@ InitializeSecurityPolicy(VOID)
 	}
 
 	SecurityPolicyInitialized = TRUE;
-
-	return EFI_SUCCESS;
 }
 
 EFI_STATUS
@@ -161,11 +158,8 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 
 	EFI_STATUS Status;
 
-	if (SecurityPolicyInitialized == FALSE) {
-		Status = InitializeSecurityPolicy();
-		if (EFI_ERROR(Status))
-			return Status;
-	}
+	if (SecurityPolicyInitialized == FALSE)
+		InitializeSecurityPolicy();
 
 	EFI_SIGNATURE_LIST *Data = NULL;
 	UINTN DataSize = 0;
@@ -229,12 +223,8 @@ EfiSecurityPolicyFree(EFI_SIGNATURE_LIST **SignatureList)
 VOID
 EfiSecurityPolicyPrint(VOID)
 {
-	if (SecurityPolicyInitialized == FALSE) {
-		EFI_STATUS Status = InitializeSecurityPolicy();
-
-		if (EFI_ERROR(Status))
-			return;
-	}
+	if (SecurityPolicyInitialized == FALSE)
+		InitializeSecurityPolicy();
 
 	PrintSecurityPolicy();
 }
