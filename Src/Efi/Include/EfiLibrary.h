@@ -29,6 +29,8 @@
 #ifndef EFI_LIBRARY_H
 #define EFI_LIBRARY_H
 
+#define STRINGIFY(x)				#x
+
 #include <Efi.h>
 #include <MokVerify.h>
 #include <SelSecureBoot.h>
