@@ -61,15 +61,11 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 UINTN
 EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 {
-	UINTN OutputLength = 0;
+	VA_LIST Marker;
 
-	if (Format) {
-		VA_LIST Marker;
-
-		VA_START(Marker, Format);
-		OutputLength = ConsolePrint(Level, Format, Marker);
-		VA_END(Marker);
-	}
+	VA_START(Marker, Format);
+	UINTN OutputLength = ConsolePrint(Level, Format, Marker);
+	VA_END(Marker);
 
 	if (!OutputLength)
 		return 0;
@@ -107,7 +103,7 @@ EfiConsoleGetVerbosity(EfiConsolePrintLevel *Level)
 
 	if (CurrentConsolePrintLevel < CPL_DEBUG ||
 	    CurrentConsolePrintLevel >= CPL_MAX)
-		return EFI_INVALID_PARAMETER;
+		return EFI_UNSUPPORTED;
 
 	*Level = CurrentConsolePrintLevel;
 
