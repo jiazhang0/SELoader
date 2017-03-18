@@ -210,8 +210,8 @@ EfiLoadSignature(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize,
 						      L"for the extracted "
 						      L"content ");
 
-	VOID *Signature;
-	UINTN SignatureSize;
+	VOID *Signature = NULL;
+	UINTN SignatureSize = 0;
 	EFI_STATUS Status;
 
 	Status = LoadFile(Path, L".p7a", &Signature, &SignatureSize);
