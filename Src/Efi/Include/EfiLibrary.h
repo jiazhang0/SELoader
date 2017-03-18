@@ -240,6 +240,7 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...);
 #define EfiConsoleTraceFault(Format, ...)	\
 	do {	\
 		EfiConsoleTrace(CPL_FAULT, Format, ##__VA_ARGS__); \
+		while (1) {}	\
 	} while (0)
 
 UINTN
