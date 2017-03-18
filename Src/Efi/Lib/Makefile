@@ -18,7 +18,6 @@ OBJS_$(LIB_NAME) := \
 	SecurityPolicy.o \
 	UefiSecureBoot.o \
 	Mok2Verify.o \
-	SelSecureBoot.o \
 	EfiLibrary.o
 
 LIBS_$(LIB_NAME) := \

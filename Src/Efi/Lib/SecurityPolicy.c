@@ -228,3 +228,21 @@ EfiSecurityPolicyPrint(VOID)
 
 	PrintSecurityPolicy();
 }
+
+BOOLEAN
+EfiSecurityPolicyUefiSecureBootStatus(VOID)
+{
+	if (SecurityPolicyInitialized == FALSE)
+		InitializeSecurityPolicy();
+
+	return UefiSecureBootEnabled;	
+}
+
+BOOLEAN
+EfiSecurityPolicyMokSecureBootStatus(VOID)
+{
+	if (SecurityPolicyInitialized == FALSE)
+		InitializeSecurityPolicy();
+
+	return UefiSecureBootEnabled;	
+}

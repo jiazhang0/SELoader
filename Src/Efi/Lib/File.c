@@ -190,24 +190,10 @@ LoadSignatureRequired(CONST CHAR16 *Path)
 	    StrEndsWith(Path, L".p7s") == TRUE)
 		return FALSE;
 
-	UINT8 SelSecureBoot;
-	EFI_STATUS Status;
-
-	Status = SelSecureBootMode(&SelSecureBoot);
-	if (EFI_ERROR(Status)) {
-		if (Status == EFI_NOT_FOUND)
-			EfiConsolePrintDebug(L"Ignore to verify file %s "
-					     L"due to SelSecureBoot unset\n",
-					     Path);
-		else
-			EfiConsolePrintDebug(L"Ignore to verify file %s "
-					     L"(err: 0x%x)\n", Path, Status);
-		return FALSE;
-	}
-
-	if (SelSecureBoot == 0) {
-		EfiConsolePrintDebug(L"Ignore to verify file %s due to "
-				     L"SelSecureBoot disabled\n", Path);
+	if (EfiSecurityPolicyMokSecureBootStatus() == FALSE) {
+		EfiConsolePrintDebug(L"Ignore to verify file %s "
+				     L"due to MOK Secure Boot disabled\n",
+				     Path);
 		return FALSE;
 	}
 

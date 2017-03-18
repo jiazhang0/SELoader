@@ -33,7 +33,6 @@
 
 #include <Efi.h>
 #include <MokVerify.h>
-#include <SelSecureBoot.h>
 
 extern EFI_HANDLE gThisImage;
 extern EFI_HANDLE gThisDevice;
@@ -95,14 +94,6 @@ EfiVariableReadMok(CONST CHAR16 *VariableName, UINT32 *Attributes,
 			       Attributes, Data, DataSize);
 }
 
-STATIC inline EFI_STATUS
-EfiVariableReadSel(CONST CHAR16 *VariableName, UINT32 *Attributes,
-		   VOID **Data, UINTN *DataSize)
-{
-	return EfiVariableRead(VariableName, &gSelSecureBootProtocolGuid,
-			       Attributes, Data, DataSize);
-}
-
 EFI_STATUS
 EfiVariableWrite(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 		 UINT32 Attributes, VOID *Data, UINTN DataSize);
@@ -131,14 +122,6 @@ EfiVariableWriteMok(CONST CHAR16 *VariableName, UINT32 Attributes,
 				Attributes, Data, DataSize);
 }
 
-STATIC inline EFI_STATUS
-EfiVariableWriteSel(CONST CHAR16 *VariableName, UINT32 Attributes,
-		    VOID *Data, UINTN DataSize)
-{
-	return EfiVariableWrite(VariableName, &gSelSecureBootProtocolGuid,
-				Attributes, Data, DataSize);
-}
-
 EFI_STATUS
 EfiVariableDelete(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid);
 
@@ -158,12 +141,6 @@ STATIC inline EFI_STATUS
 EfiVariableDeleteMok(CONST CHAR16 *VariableName)
 {
 	return EfiVariableDelete(VariableName, &gEfiMokVerifyProtocolGuid);
-}
-
-STATIC inline EFI_STATUS
-EfiVariableDeleteSel(CONST CHAR16 *VariableName)
-{
-	return EfiVariableDelete(VariableName, &gSelSecureBootProtocolGuid);
 }
 
 EFI_STATUS
@@ -292,8 +269,11 @@ EfiSecurityPolicyFree(EFI_SIGNATURE_LIST **SignatureList);
 VOID
 EfiSecurityPolicyPrint(VOID);
 
-EFI_STATUS
-SelSecureBootMode(UINT8 *SelSecureBoot);
+BOOLEAN
+EfiSecurityPolicyUefiSecureBootStatus(VOID);
+
+BOOLEAN
+EfiSecurityPolicyMokSecureBootStatus(VOID);
 
 EFI_STATUS
 EfiSignatureVerifyBuffer(VOID *Signature, UINTN SignatureSize,
