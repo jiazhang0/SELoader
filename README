@@ -34,6 +34,9 @@ Known Issues
 
 References
 ----------
+libsign - the signing tool used to generate SELoader PKCS#7 signature
+https://github.com/jiazhang0/libsign
+
 shim - implement MOK verify protocol
 https://github.com/rhinstaller/shim
 
