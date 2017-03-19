@@ -101,9 +101,7 @@ InitializeSecurityPolicy(VOID)
 				     L"MOK Secure Boot mode\n", !MokSBState ?
 								L"" : L"not ");
 
-	if (MokVerifyInstalled != FALSE || MokSBState == 1)
-		MokSecureBootProvisioned = TRUE;
-	else {
+	if (MokVerifyInstalled == FALSE && MokSBState == 0) {
 		EfiConsolePrintError(L"Shim loader is in MOK Secure Boot mode "
 				     L"but MOK Verify Protocol not "
 				     L"installed\n");
@@ -119,7 +117,7 @@ InitializeSecurityPolicy(VOID)
 	if (UefiSecureBootProvisioned == TRUE && SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
 
-		if (MokSecureBootProvisioned == TRUE && MokSBState == 1)
+		if (MokSecureBootProvisioned == TRUE && MokSBState == 0)
 			MokSecureBootEnabled = TRUE;
 	}
 
@@ -138,7 +136,9 @@ InitializeSecurityPolicy(VOID)
 					     L"installing MOK2 Verify "
 					     L"Protocol\n");
 		}
-	}
+	} else
+		EfiConsolePrintInfo(L"Igore to install MOK2 Verify "
+				    L"Protocol\n");
 
 	SecurityPolicyInitialized = TRUE;
 }
