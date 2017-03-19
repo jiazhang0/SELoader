@@ -30,40 +30,38 @@
 #include <EfiLibrary.h>
 
 EFI_STATUS
-UefiSecureBootGetDeployedMode(UINT8 *DeployedMode)
+UefiSecureBootDeployedMode(UINT8 *DeployedMode)
 {
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*DeployedMode);
-	EFI_STATUS Status = EfiVariableReadGlobal(L"DeployedMode", &Attributes,
-						  (VOID **)&DeployedMode,
-						  &VarSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintInfo(L"Unable to get DeployedMode variable\n");
-		if (Status == EFI_NOT_FOUND)
-			Status = EFI_UNSUPPORTED;
+	EFI_STATUS Status;
 
+	Status = EfiVariableReadGlobal(L"DeployedMode", &Attributes,
+				       (VOID **)&DeployedMode, &VarSize);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintInfo(L"Unable to get DeployedMode "
+				    L"(err: 0x%x)\n", Status);
 		return Status;
 	}
 
+	Status = EFI_UNSUPPORTED;
+
 	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid DeployedMode variable size "
-				     L"0x%x\n", VarSize);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid size of DeployedMode "
+				     L"(0x%x)\n", VarSize);
 		goto Err;
 	}
 
 	if (Attributes != (EFI_VARIABLE_BOOTSERVICE_ACCESS |
 			   EFI_VARIABLE_RUNTIME_ACCESS)) {
-		EfiConsolePrintError(L"Invalid DeployedMode variable "
-				     L"attribute 0x%x\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid attribute of DeployedMode "
+				     L"(0x%x)\n", Attributes);
 		goto Err;
 	}
 
 	if (*DeployedMode != 0 && *DeployedMode != 1) {
-		EfiConsolePrintError(L"Invalid DeployedMode variable value "
-				     L"0x%x\n", *DeployedMode);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid value of DeployedMode "
+				     L"(0x%x)\n", *DeployedMode);
 		goto Err;
 	}
 
@@ -78,9 +76,9 @@ UefiSecureBootGetDeployedMode(UINT8 *DeployedMode)
 						&InverseDeployedMode,
 					 	VarSize);
 		if (!EFI_ERROR(Status)) {
-			EfiConsolePrintError(L"DeployedMode variable is not "
+			EfiConsolePrintError(L"DeployedMode is not "
 					     L"read-only\n");
-			Status = EFI_INVALID_PARAMETER;
+			Status = EFI_UNSUPPORTED;
 			goto Err;
 		}
 	}
@@ -94,45 +92,43 @@ Err:
 }
 
 EFI_STATUS
-UefiSecureBootGetAuditMode(UINT8 *AuditMode)
+UefiSecureBootAuditMode(UINT8 *AuditMode)
 {
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*AuditMode);
-	EFI_STATUS Status = EfiVariableReadGlobal(L"AuditMode", &Attributes,
-						  (VOID **)&AuditMode,
-						  &VarSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintInfo(L"Unable to get AuditMode variable\n");
-		if (Status == EFI_NOT_FOUND)
-			Status = EFI_UNSUPPORTED;
+	EFI_STATUS Status;
 
+	Status = EfiVariableReadGlobal(L"AuditMode", &Attributes,
+				       (VOID **)&AuditMode, &VarSize);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Unable to get AuditMode "
+				     L"(err: 0x%x)\n", Status);
 		return Status;
 	}
 
+	Status = EFI_UNSUPPORTED;
+
 	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid AuditMode variable size "
-				     L"0x%x\n", VarSize);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid size of AuditMode "
+				     L"(0x%x)\n", VarSize);
 		goto Err;
 	}
 
 	if (Attributes != (EFI_VARIABLE_BOOTSERVICE_ACCESS |
 			   EFI_VARIABLE_RUNTIME_ACCESS)) {
-		EfiConsolePrintError(L"Invalid AuditMode variable attribute "
-				     L"0x%x\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid attribute of AuditMode "
+				     L"(0x%x)\n", Attributes);
 		goto Err;
 	}
 
 	if (*AuditMode != 0 && *AuditMode != 1) {
-		EfiConsolePrintError(L"Invalid AuditMode variable value "
-				     L"0x%x\n", *AuditMode);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid value of AuditMode "
+				     L"(0x%x)\n", *AuditMode);
 		goto Err;
 	}
 
 	UINT8 DeployedMode;
-	Status = UefiSecureBootGetDeployedMode(&DeployedMode);
+	Status = UefiSecureBootDeployedMode(&DeployedMode);
 	if (EFI_ERROR(Status)) 
 		goto Err;
 
@@ -146,9 +142,8 @@ UefiSecureBootGetAuditMode(UINT8 *AuditMode)
 						&InverseAuditMode,
 						VarSize);
 		if (!EFI_ERROR(Status)) {
-			EfiConsolePrintError(L"AuditMode variable is not "
-					     L"read-only\n");
-			Status = EFI_INVALID_PARAMETER;
+			EfiConsolePrintError(L"AuditMode is not read-only\n");
+			Status = EFI_UNSUPPORTED;
 			goto Err;
 		}
 	}
@@ -162,55 +157,53 @@ Err:
 }
 
 EFI_STATUS
-UefiSecureBootGetSetupMode(UINT8 *SetupMode)
+UefiSecureBootSetupMode(UINT8 *SetupMode)
 {
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*SetupMode);
-	EFI_STATUS Status = EfiVariableReadGlobal(L"SetupMode", &Attributes,
-						  (VOID **)&SetupMode,
-						  &VarSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintInfo(L"UEFI Secure Boot is not supported "
-				    L"by the platform firmware\n");
-		if (Status == EFI_NOT_FOUND)
-			Status = EFI_UNSUPPORTED;
-		else
-			goto Err;
+	EFI_STATUS Status;
 
+	Status = EfiVariableReadGlobal(L"SetupMode", &Attributes,
+				       (VOID **)&SetupMode, &VarSize);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Unable to get SetupMode "
+				     L"(err: 0x%x)\n", Status);
 		return Status;
 	}
 
+	Status = EFI_UNSUPPORTED;
+
 	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid SetupMode variable size "
-				     L"%d-byte\n", VarSize);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid size of SetupMode "
+				     L"(%d-byte)\n", VarSize);
 		goto Err;
 	}
 
 	if (Attributes != (EFI_VARIABLE_BOOTSERVICE_ACCESS |
 			   EFI_VARIABLE_RUNTIME_ACCESS)) {
-		EfiConsolePrintError(L"Invalid SetupMode variable attribute "
-				     L"0x%x\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid attribute of SetupMode "
+				     L"(0x%x)\n", Attributes);
+		Status = EFI_UNSUPPORTED;
 		goto Err;
 	}
 
 	if (*SetupMode != 0 && *SetupMode != 1) {
-		EfiConsolePrintError(L"Invalid SetupMode variable value "
-				     L"0x%x\n", *SetupMode);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid value of SetupMode "
+				     L"(0x%x)\n", *SetupMode);
 		goto Err;
 	}
 
 	/* Check if SetupMode variable is read-only */
-	UINT8 InverseSetupMode = !*SetupMode;
+	UINT8 InverseSetupMode;
+
+	InverseSetupMode = !*SetupMode;
 	VarSize = sizeof(InverseSetupMode);
 	Status = EfiVariableWriteGlobal(L"SetupMode", Attributes,
 					&InverseSetupMode,
 					VarSize);
 	if (!EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"SetupMode variable is not read-only\n");
-		Status = EFI_INVALID_PARAMETER;
+		Status = EFI_UNSUPPORTED;
 		goto Err;
 	}
 
@@ -223,55 +216,53 @@ Err:
 }
 
 EFI_STATUS
-UefiSecureBootGetStatus(UINT8 *SecureBoot)
+UefiSecureBootState(UINT8 *SecureBoot)
 {
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*SecureBoot);
-	EFI_STATUS Status = EfiVariableReadGlobal(L"SecureBoot", &Attributes,
-						  (VOID **)&SecureBoot,
-						  &VarSize);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintInfo(L"UEFI Secure Boot is not supported "
-				    L"by the platform firmware\n");
-		if (Status == EFI_NOT_FOUND)
-			Status = EFI_UNSUPPORTED;
-		else
-			goto Err;
+	EFI_STATUS Status;
 
+	Status = EfiVariableReadGlobal(L"SecureBoot", &Attributes,
+				       (VOID **)&SecureBoot, &VarSize);
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Unable to get SecureBoot "
+				     L"(err: 0x%x)\n", Status);
 		return Status;
 	}
 
+	Status = EFI_UNSUPPORTED;
+
 	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid SecureBoot variable size "
-				     L"%d-byte\n", VarSize);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid size of SecureBoot "
+				     L"(%d-byte)\n", VarSize);
 		goto Err;
 	}
 
 	if (Attributes != (EFI_VARIABLE_BOOTSERVICE_ACCESS |
 			   EFI_VARIABLE_RUNTIME_ACCESS)) {
-		EfiConsolePrintError(L"Invalid SecureBoot variable attribute "
-				     L"0x%x\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid attribute of SecureBoot "
+				     L"(0x%x)\n", Attributes);
 		goto Err;
 	}
 
 	if (*SecureBoot != 0 && *SecureBoot != 1) {
-		EfiConsolePrintError(L"Invalid SecureBoot variable value "
-				     L"0x%x\n", *SecureBoot);
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"Invalid value of SecureBoot "
+				     L"(0x%x)\n", *SecureBoot);
 		goto Err;
 	}
 
 	/* Check if SetupMSecureBootode variable is read-only */
-	UINT8 InverseSecureBoot = !*SecureBoot;
+	UINT8 InverseSecureBoot;
+
+	InverseSecureBoot = !*SecureBoot;
 	VarSize = sizeof(InverseSecureBoot);
 	Status = EfiVariableWriteGlobal(L"SecureBoot", Attributes,
 					&InverseSecureBoot,
 				  	VarSize);
 	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"SecureBoot variable is not read-only\n");
-		Status = EFI_INVALID_PARAMETER;
+		EfiConsolePrintError(L"SecureBoot variable is not "
+				     L"read-only\n");
+		Status = EFI_UNSUPPORTED;
 		goto Err;
 	}
 

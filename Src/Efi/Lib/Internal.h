@@ -30,16 +30,16 @@
 #define __LIB_INTERNAL_H__
 
 EFI_STATUS
-UefiSecureBootGetDeployedMode(UINT8 *DeployedMode);
+UefiSecureBootDeployedMode(UINT8 *DeployedMode);
 
 EFI_STATUS
-UefiSecureBootGetAuditMode(UINT8 *AuditMode);
+UefiSecureBootAuditMode(UINT8 *AuditMode);
 
 EFI_STATUS
-UefiSecureBootGetSetupMode(UINT8 *SetupMode);
+UefiSecureBootSetupMode(UINT8 *SetupMode);
 
 EFI_STATUS
-UefiSecureBootGetStatus(UINT8 *SecureBoot);
+UefiSecureBootState(UINT8 *SecureBoot);
 
 EFI_STATUS
 Pkcs7VerifyDetachedSignature(VOID *Hash, UINTN HashSize,

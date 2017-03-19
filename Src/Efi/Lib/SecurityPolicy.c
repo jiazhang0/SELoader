@@ -68,14 +68,14 @@ InitializeSecurityPolicy(VOID)
 	UINT8 SetupMode = 1;
 	EFI_STATUS Status;
 
-	Status = UefiSecureBootGetSetupMode(&SetupMode);
+	Status = UefiSecureBootSetupMode(&SetupMode);
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"Platform firmware is in %s mode\n",
 				     SetupMode == 1 ? L"Setup" : L"User");
 
 	UINT8 SecureBoot = 0;
 
-	Status = UefiSecureBootGetStatus(&SecureBoot);
+	Status = UefiSecureBootState(&SecureBoot);
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"Platform firmware is %soperating in "
 				     L"Secure Boot mode\n", SecureBoot == 1 ?
