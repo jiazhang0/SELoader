@@ -17,6 +17,7 @@ OBJS_$(LIB_NAME) := \
 	Signature.o \
 	SecurityPolicy.o \
 	UefiSecureBoot.o \
+	MokVerify.o \
 	Mok2Verify.o \
 	EfiLibrary.o
 

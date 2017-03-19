@@ -31,85 +31,11 @@
 #include <MokVerify.h>
 #include <Mok2Verify.h>
 
-EFI_GUID gEfiMokVerifyProtocolGuid = EFI_MOK_VERIFY_PROTOCOL_GUID;
+#include "Internal.h"
+
 EFI_GUID gEfiMok2VerifyProtocolGuid = EFI_MOK2_VERIFY_PROTOCOL_GUID;
 
 STATIC EFI_HANDLE Mok2VerifyHandle;
-
-EFI_STATUS
-MokVerifyProtocolInstalled(BOOLEAN *Installed)
-{
-	if (!Installed)
-		return EFI_INVALID_PARAMETER;
-
-	EFI_STATUS Status;
-
-	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid, NULL);
-	if (EFI_ERROR(Status)) {
-		*Installed = FALSE;
-		return Status;
-	}
-
-	*Installed = TRUE;
-
-        return EFI_SUCCESS;
-}
-
-EFI_STATUS
-MokSecureBootState(UINT8 *MokSBState)
-{
-	if (!MokSBState)
-		return EFI_INVALID_PARAMETER;
-
-	UINT32 Attributes;
-	UINTN VarSize = sizeof(*MokSBState);
-	EFI_STATUS Status;
-
-	Status = EfiVariableReadMok(L"MokSBState", &Attributes,
-				    (VOID **)&MokSBState, &VarSize);
-	if (EFI_ERROR(Status)) {
-		if (Status == EFI_NOT_FOUND) {
-			*MokSBState = 0;
-
-			EfiConsolePrintDebug(L"Assuming MOK Secure Boot enabled\n");
-
-			return EFI_SUCCESS;
-		}
-
-		EfiConsolePrintError(L"Failed to read MokSBState "
-				     L"(err: 0x%x)\n", Status);
-
-		return Status;
-	}
-
-	Status = EFI_UNSUPPORTED;
-
-	if (VarSize != 1) {
-		EfiConsolePrintError(L"Invalid size of MokSBState (%d-byte)\n",
-				     VarSize);
-		goto Err;
-	}
-
-	if (Attributes != EFI_VARIABLE_BOOTSERVICE_ACCESS) {
-		EfiConsolePrintError(L"Invalid attribute of MokSBState "
-				     L"(0x%x)\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
-		goto Err;
-	}
-
-	if (*MokSBState != 0 && *MokSBState != 1) {
-		EfiConsolePrintError(L"Invalid value of MokSBState (0x%x)\n",
-				     *MokSBState);
-		goto Err;
-	}
-
-	return EFI_SUCCESS;
-
-Err:
-	EfiVariableDeleteMok(L"MokSBState");
-
-	return Status;
-}
 
 STATIC EFI_STATUS EFIAPI
 Mok2VerifyBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Data,
