@@ -60,6 +60,9 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	if (EFI_ERROR(Status))
 		return Status;
 
+	EfiConsoleTraceInfo(L"Traced on.\nPress any key to continue "
+			    L"when prompted with \">>|\" ...\n");
+
 	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
 
 	EfiConsolePrintLevel Level;
@@ -67,9 +70,6 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	Status = EfiConsoleGetVerbosity(&Level);
 	if (!EFI_ERROR(Status) && Level == CPL_DEBUG)
 		EfiSecurityPolicyPrint();
-
-	EfiConsoleTraceInfo(L"Traced on.\nPress any key to continue "
-			    L"when prompted with \">>|\" ...\n");
 
 	return Status;
 }
