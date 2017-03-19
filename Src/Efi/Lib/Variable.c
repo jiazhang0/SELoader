@@ -35,6 +35,8 @@ EFI_GUID gEfiGlobalVariableGuid = EFI_GLOBAL_VARIABLE;
 #endif
 
 /*
+ * Vectorized buffer parameters.
+ *
  * Data == NULL: Ignore the content of variable
  * DataSize == NULL: Ignore the size of variable
  * *Data == NULL: Return the buffer of variable
@@ -52,6 +54,7 @@ EfiVariableRead(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 		BufferSize = *DataSize;
 
 	EFI_GET_VARIABLE GetVariable;
+
 	GetVariable = gRT->GetVariable;
 	*DataSize = 0;
 	Status = GetVariable((CHAR16 *)VariableName, (EFI_GUID *)VendorGuid,
@@ -64,6 +67,7 @@ EfiVariableRead(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 		return EFI_SUCCESS;
 
 	VOID *Buffer;
+
 	if (!*Data || BufferSize < *DataSize) {
 		Status = EfiMemoryAllocate(*DataSize, &Buffer);
 		if (EFI_ERROR(Status))
@@ -92,7 +96,12 @@ EFI_STATUS
 EfiVariableWrite(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 		 UINT32 Attributes, VOID *Data, UINTN DataSize)
 {
-	/* Deleting a variable should go EfiLibraryDeleteVariable() */
+	if (!VariableName || !VendorGuid || !Attributes)
+		return EFI_INVALID_PARAMETER;
+
+	/*
+	 * Deleting a variable should go EfiVariableDelete().
+	 */
 	if (!Data || !DataSize)
 		return EFI_INVALID_PARAMETER;
 
@@ -103,6 +112,9 @@ EfiVariableWrite(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid,
 EFI_STATUS
 EfiVariableDelete(CONST CHAR16 *VariableName, CONST EFI_GUID *VendorGuid)
 {
+	if (!VariableName || !VendorGuid)
+		return EFI_INVALID_PARAMETER;
+
 	UINT32 Attributes;
 	EFI_STATUS Status;
 
