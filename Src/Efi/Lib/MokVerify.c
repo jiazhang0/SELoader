@@ -67,7 +67,8 @@ MokSecureBootState(UINT8 *MokSBState)
 		if (Status == EFI_NOT_FOUND) {
 			*MokSBState = 0;
 
-			EfiConsolePrintDebug(L"Assuming MOK Secure Boot enabled\n");
+			EfiConsolePrintDebug(L"Assuming MOK Secure Boot "
+					     L"enabled\n");
 
 			return EFI_SUCCESS;
 		}
@@ -89,7 +90,6 @@ MokSecureBootState(UINT8 *MokSBState)
 	if (Attributes != EFI_VARIABLE_BOOTSERVICE_ACCESS) {
 		EfiConsolePrintError(L"Invalid attribute of MokSBState "
 				     L"(0x%x)\n", Attributes);
-		Status = EFI_INVALID_PARAMETER;
 		goto Err;
 	}
 
