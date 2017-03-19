@@ -132,6 +132,7 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 	}
 
 	UINTN FileSize = (UINTN)FileInfo->FileSize;
+
 	EfiMemoryFree(FileInfo);
 
 	/* Request file size */

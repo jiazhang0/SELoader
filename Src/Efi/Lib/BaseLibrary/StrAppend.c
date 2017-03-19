@@ -37,8 +37,9 @@ StrAppend(CONST CHAR16 *Source, CONST CHAR16 *Suffix)
 	UINTN SuffixLength = StrLen(Suffix);
 	UINTN Size = (SourceLength + SuffixLength + 1) * sizeof(CHAR16);
 	CHAR16 *Destination;
+	EFI_STATUS Status;
 
-	EFI_STATUS Status = EfiMemoryAllocate(Size, (VOID **)&Destination);
+	Status = EfiMemoryAllocate(Size, (VOID **)&Destination);
 	if (EFI_ERROR(Status))
 		return NULL;
 

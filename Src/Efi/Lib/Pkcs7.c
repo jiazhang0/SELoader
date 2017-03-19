@@ -58,7 +58,9 @@ MergeSignatureList(EFI_SIGNATURE_LIST ***Destination,
 	}
 
 	EFI_SIGNATURE_LIST **List;
-	EFI_STATUS Status = EfiMemoryAllocate(Size, (VOID **)&List);
+	EFI_STATUS Status;
+
+	Status = EfiMemoryAllocate(Size, (VOID **)&List);
 	if (EFI_ERROR(Status))
 		return EFI_OUT_OF_RESOURCES;
 
@@ -87,8 +89,10 @@ InitializePkcs7(VOID)
 {
 	EfiConsoleTraceDebug(L"Initializing PKCS#7 infrastructure ...");
 
-	EFI_STATUS Status = EfiProtocolLocate(&gEfiPkcs7VerifyProtocolGuid,
-					      (VOID **)&Pkcs7VerifyProtocol);
+	EFI_STATUS Status;
+
+	Status = EfiProtocolLocate(&gEfiPkcs7VerifyProtocolGuid,
+				   (VOID **)&Pkcs7VerifyProtocol);
 	if (!EFI_ERROR(Status)) {
 		EfiConsolePrintInfo(L"Pkcs7Verify protocol installed "
 				    L"by BIOS\n");
@@ -115,24 +119,28 @@ InitializePkcs7(VOID)
 
 	EFI_SIGNATURE_LIST *Db = NULL;
 	UINTN DbSize = 0;
+
 	Status = EfiSecurityPolicyLoad(L"db", &Db, &DbSize);
 	if (EFI_ERROR(Status))
 		return Status;
 
 	EFI_SIGNATURE_LIST *MokList = NULL;
 	UINTN MokListSize = 0;
+
 	Status = EfiSecurityPolicyLoad(L"MokList", &MokList, &MokListSize);
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadMokList;
 
 	EFI_SIGNATURE_LIST *Dbx = NULL;
 	UINTN DbxSize = 0;
+
 	Status = EfiSecurityPolicyLoad(L"dbx", &Dbx, &DbxSize);
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadDbx;
 
 	EFI_SIGNATURE_LIST *MokListX = NULL;
 	UINTN MokListXSize = 0;
+
 	Status = EfiSecurityPolicyLoad(L"MokListX", &MokListX, &MokListXSize);
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadMokListX;
@@ -207,6 +215,7 @@ Pkcs7VerifyDetachedSignature(VOID *Hash, UINTN HashSize,
 #endif
 
 	EFI_PKCS7_VERIFY_BUFFER Verify = Pkcs7VerifyProtocol->VerifyBuffer;
+
 	Status = Verify(Pkcs7VerifyProtocol, Signature, SignatureSize,
 			Hash, HashSize, AllowedDb, RevokedDb, TimeStampDb,
 			NULL, NULL);

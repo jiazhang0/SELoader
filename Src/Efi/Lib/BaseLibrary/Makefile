@@ -27,4 +27,4 @@ clean:
 	    $(addsuffix .*, $(LIB_TARGET))
 
 $(LIB_TARGET): $(OBJS_$(LIB_NAME))
-	$(AR) rcs $@ $^
+	@$(AR) rcs $@ $^

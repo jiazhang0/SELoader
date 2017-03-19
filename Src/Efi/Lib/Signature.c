@@ -127,6 +127,7 @@ ParseHeader(UINT8 *Signature, UINTN SignatureSize,
 
 	UINTN TagDirectorySize = Header->NumberOfTag *
 				 sizeof(SEL_SIGNATURE_TAG);
+
 	if (!TagDirectorySize || TagDirectorySize >
 				 Header->TagDirectorySize
 			      || Header->HeaderSize +
@@ -232,6 +233,7 @@ VerifySelSignature(SEL_SIGNATURE_CONTEXT *Context, VOID **Data, UINTN *DataSize)
 		}
 
 		UINT8 *Hash;
+
 		Status = EfiHashData(Context->HashAlgorithm, *Data, *DataSize,
 				     &Hash, &HashSize);
 		if (EFI_ERROR(Status))
@@ -273,9 +275,9 @@ STATIC EFI_STATUS
 ParseSelSignature(UINT8 *Signature, UINTN SignatureSize,
 		  SEL_SIGNATURE_CONTEXT *Context)
 {
-	EFI_STATUS Status;
-
 	InitContext(Context);
+
+	EFI_STATUS Status;
 
 	Status = ParseHeader(Signature, SignatureSize, Context);
 	if (EFI_ERROR(Status))
@@ -305,6 +307,7 @@ EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
 		return Status;
 
 	SEL_SIGNATURE_CONTEXT SignatureContext;
+
 	Status = ParseSelSignature(SelSignature, SelSignatureSize,
 				   &SignatureContext);
 	if (EFI_ERROR(Status)) {

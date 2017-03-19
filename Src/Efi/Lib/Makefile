@@ -32,7 +32,7 @@ clean:
 	@$(MAKE) -C BaseLibrary clean
 
 $(LIB_TARGET): $(OBJS_$(LIB_NAME))
-	$(AR) rcs $@ $^
+	@$(AR) rcs $@ $^
 
 BaseLibrary/libBaseLibrary.a:
 	@$(MAKE) -C BaseLibrary

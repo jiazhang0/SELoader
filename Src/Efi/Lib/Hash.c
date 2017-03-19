@@ -55,7 +55,9 @@ STATIC EFI_HASH_PROTOCOL *HashProtocol;
 STATIC EFI_STATUS
 LoadHash2DxeCrypto(VOID)
 {
-	EFI_STATUS Status = EfiImageExecuteDriver(L"Hash2DxeCrypto.efi");
+	EFI_STATUS Status;
+
+	Status = EfiImageExecuteDriver(L"Hash2DxeCrypto.efi");
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Unable to load Hash2DxeCrypto driver "
 				     L"(err: 0x%x)\n", Status);
@@ -186,6 +188,7 @@ EfiHashInitialize(CONST EFI_GUID *HashAlgorithm,
 	}
 
 	UINTN HashSize;
+
 	if (Hash2ServiceBindingProtocolUsed == TRUE)
 		Status = Hash2Protocol->GetHashSize(Hash2Protocol,
 						    HashAlgorithm,
@@ -307,7 +310,9 @@ HashData(CONST EFI_GUID *HashAlgorithm, CONST UINT8 *Message,
 	 UINTN MessageSize, UINT8 **Hash, UINTN *HashSize)
 {
 	EFI_HASH_CONTEXT Context;
-	EFI_STATUS Status = EfiHashInitialize(HashAlgorithm, &Context);
+	EFI_STATUS Status;
+
+	Status = EfiHashInitialize(HashAlgorithm, &Context);
 	if (EFI_ERROR(Status))
 		return Status;
 

@@ -41,16 +41,15 @@ LoadImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 	  EFI_HANDLE *ImageHandle)
 {
 	EFI_LOADED_IMAGE *LoadedImage;
-	EFI_STATUS Status = EfiProtocolOpen(gThisImage,
-					    &gEfiLoadedImageProtocolGuid,
-					    (VOID **)&LoadedImage);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to locate parent device "
-				     L"handle (err: 0x%x)\n", Status);
+	EFI_STATUS Status;
+
+	Status = EfiProtocolOpen(gThisImage, &gEfiLoadedImageProtocolGuid,
+				 (VOID **)&LoadedImage);
+	if (EFI_ERROR(Status))
 		return Status;
-	}
 
 	CHAR16 *FilePath;
+
 	Status = EfiDevicePathCreate(Path, &FilePath);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to create the file path for "
@@ -116,25 +115,39 @@ ExecuteImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 EFI_STATUS
 EfiImageExecuteDriver(CONST CHAR16 *Path)
 {
+	if (!Path)
+		return EFI_INVALID_PARAMETER;
+
 	return ExecuteImage(Path, NULL, 0, FALSE);
 }
 
 EFI_STATUS
 EfiImageExecute(CONST CHAR16 *Path)
 {
+	if (!Path)
+		return EFI_INVALID_PARAMETER;
+
 	return ExecuteImage(Path, NULL, 0, TRUE);
 }
 
 EFI_STATUS
 EfiImageLoad(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize)
 {
+	if (!Path)
+		return EFI_INVALID_PARAMETER;
+
 	return LoadImage(Path, ImageBuffer, ImageBufferSize, NULL);
 }
 
 EFI_STATUS
 EfiImageExecuteSecure(CONST CHAR16 *Path)
 {
-	CHAR16 *SignaturePath = StrAppend(Path, L".p7s");
+	if (!Path)
+		return EFI_INVALID_PARAMETER;
+
+	CHAR16 *SignaturePath;
+
+	SignaturePath = StrAppend(Path, L".p7s");
 	if (!SignaturePath) {
 		EfiConsolePrintError(L"Failed to set the path for signature "
 				     L"file %s\n", Path);
@@ -143,8 +156,9 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 
 	VOID *Signature = NULL;
 	UINTN SignatureSize = 0;
-	EFI_STATUS Status = EfiFileLoad(SignaturePath, &Signature,
-					&SignatureSize);
+	EFI_STATUS Status;
+
+	Status = EfiFileLoad(SignaturePath, &Signature, &SignatureSize);
 	EfiMemoryFree(SignaturePath);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to load the signature file %s\n",
@@ -152,11 +166,11 @@ EfiImageExecuteSecure(CONST CHAR16 *Path)
 		return Status;
 	}
 
-	EfiConsolePrintDebug(L"The signature file %s loaded\n",
-			     SignaturePath);
+	EfiConsolePrintDebug(L"The signature file %s loaded\n", SignaturePath);
 
         VOID *Data = NULL;
         UINTN DataSize = 0;
+
 	Status = EfiFileLoad(Path, &Data, &DataSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to load the file %s\n",
