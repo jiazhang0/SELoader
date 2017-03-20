@@ -297,8 +297,6 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	if (Data && *Data && DataSize && !*DataSize)
 		return EFI_INVALID_PARAMETER;
 
-	EfiConsoleTraceDebug(L"Attempting to load the file %s ...", Path);
-
 	BOOLEAN CheckSignature;
 	EFI_STATUS Status;
 

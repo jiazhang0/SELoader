@@ -45,7 +45,7 @@ Mok2VerifyBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Data,
 		return EFI_INVALID_PARAMETER;
 
 	EfiConsoleTraceDebug(L"Attempting to verify buffer %s by MOK2 Verify "
-			     L"Protoocl ...", Path);
+			     L"Protocol ...", Path);
 
 	UINT8 MokSBState = 1;
 	EFI_STATUS Status;
@@ -67,6 +67,7 @@ Mok2VerifyBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Data,
 	if (EFI_ERROR(Status)) {
 		EfiConsoleTraceDebug(L"Attempt to verify buffer for %s with "
 				     L"LoadImage()\n", Path);
+
 		return EfiImageLoad(Path, Data, DataSize);
 	}
 
@@ -126,7 +127,7 @@ Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path,
 		return This->VerifyBuffer(This, *Data, *DataSize, Path);
 
 	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
-			     L"Protoocl ...", Path);
+			     L"Protocol ...", Path);
 
 	UINT8 MokSBState = 1;
 	EFI_STATUS Status;
@@ -152,9 +153,6 @@ STATIC EFI_MOK2_VERIFY_PROTOCOL Mok2VerifyProtocol = {
 EFI_STATUS
 Mok2VerifyInitialize(VOID)
 {
-	EfiConsoleTraceDebug(L"Attempting to initialize MOK2 Verify "
-			     L"Protocol ...");
-
 	UINT8 MokSBState = 1;
 	EFI_STATUS Status;
 
@@ -172,11 +170,11 @@ Mok2VerifyInitialize(VOID)
 				    (VOID *)&Mok2VerifyProtocol);
         if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to install MOK2 Verify "
-				     L"Protocol\n");
+				     L"Protocol (err: 0x%x)\n", Status);
 		return Status;
         }
 
-	EfiConsoleTraceDebug(L"MOK2 Verify Protoocl installed");
+	EfiConsolePrintDebug(L"MOK2 Verify Protocol installed\n");
 
         return EFI_SUCCESS;
 }

@@ -39,6 +39,9 @@
 STATIC EFI_STATUS
 LoadConfig(VOID)
 {
+	EfiConsoleTraceDebug(L"Attempting to load SELoader configuration "
+			     SELOADER_CONFIGURATION);
+
 	VOID *Config = NULL;
 	UINTN ConfigSize = 0;
 	EFI_STATUS Status;
