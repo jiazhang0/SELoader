@@ -233,19 +233,20 @@ EfiSecurityPolicyPrint(VOID)
 }
 
 BOOLEAN
-EfiSecurityPolicyUefiSecureBootStatus(VOID)
+EfiSecurityPolicySecureBootEnabled(VOID)
 {
 	if (SecurityPolicyInitialized == FALSE)
 		InitializeSecurityPolicy();
 
-	return UefiSecureBootEnabled;	
-}
+	BOOLEAN Result = FALSE;
 
-BOOLEAN
-EfiSecurityPolicyMokSecureBootStatus(VOID)
-{
-	if (SecurityPolicyInitialized == FALSE)
-		InitializeSecurityPolicy();
+	if (UefiSecureBootEnabled == TRUE) {
+		if (MokSecureBootProvisioned == TRUE) {
+			if (MokSecureBootEnabled == TRUE)
+				Result = TRUE;
+		} else
+			Result = TRUE;
+	}
 
-	return UefiSecureBootEnabled;	
+	return Result;
 }

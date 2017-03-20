@@ -191,9 +191,9 @@ LoadSignatureRequired(CONST CHAR16 *Path)
 	    StrEndsWith(Path, L".p7s") == TRUE)
 		return FALSE;
 
-	if (EfiSecurityPolicyMokSecureBootStatus() == FALSE) {
+	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
 		EfiConsolePrintDebug(L"Ignore to verify file %s "
-				     L"due to MOK Secure Boot disabled\n",
+				     L"due to Secure Boot disabled\n",
 				     Path);
 		return FALSE;
 	}

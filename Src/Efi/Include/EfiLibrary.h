@@ -270,10 +270,7 @@ VOID
 EfiSecurityPolicyPrint(VOID);
 
 BOOLEAN
-EfiSecurityPolicyUefiSecureBootStatus(VOID);
-
-BOOLEAN
-EfiSecurityPolicyMokSecureBootStatus(VOID);
+EfiSecurityPolicySecureBootEnabled(VOID);
 
 EFI_STATUS
 EfiSignatureVerifyBuffer(VOID *Signature, UINTN SignatureSize,
