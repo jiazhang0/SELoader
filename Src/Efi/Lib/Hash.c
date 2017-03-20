@@ -76,8 +76,9 @@ LoadHash2DxeCrypto(VOID)
 	Status = EfiProtocolLocate(&gEfiHash2ServiceBindingProtocolGuid,
 				   (VOID **)&HashServiceBindingProtocol);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Still unable to hash2 service binding "
-				     L"protocol (err: 0x%x)\n", Status);
+		EfiConsolePrintError(L"Still unable to open EFI Hash2 Service "
+				     L"Binding Protocol (err: 0x%x)\n",
+				     Status);
 		return Status;
 	}
 
@@ -97,16 +98,16 @@ InitializeHashService(VOID)
 	Status = EfiProtocolLocate(&gEfiHash2ServiceBindingProtocolGuid,
 				   (VOID **)&HashServiceBindingProtocol);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Not found hash2 service binding "
-				     L"protocol (err: 0x%x)\n", Status);
-		EfiConsolePrintDebug(L"Attempting detect hash service binding "
-				     L"protocol ...\n");
+		EfiConsolePrintDebug(L"Not found EFI Hash2 Service Binding "
+				     L"Protocol (err: 0x%x)\n", Status);
+		EfiConsolePrintDebug(L"Attempting detect EFI Hash Service "
+				     L"Binding Protocol ...\n");
 
 		Status = EfiProtocolLocate(&gEfiHashServiceBindingProtocolGuid,
 					   (VOID **)&HashServiceBindingProtocol);
 		if (EFI_ERROR(Status)) {
-			EfiConsolePrintDebug(L"BIOS doesn't support any hash "
-					     L"service binding protocol "
+			EfiConsolePrintDebug(L"BIOS doesn't support any EFI "
+					     L"Hash Service Binding Protocol "
 					     L"(err: 0x%x).\nAttempting to "
 					     L"load Hash2DxeCrypto driver "
 					     L"...\n", Status);
