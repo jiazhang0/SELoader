@@ -38,116 +38,78 @@ EFI_GUID gEfiMok2VerifyProtocolGuid = EFI_MOK2_VERIFY_PROTOCOL_GUID;
 STATIC EFI_HANDLE Mok2VerifyHandle;
 
 STATIC EFI_STATUS EFIAPI
-Mok2VerifyBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Data,
-		 IN UINTN DataSize, IN CONST CHAR16 *Path)
+Mok2VerifySignature(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Signature,
+		    IN UINTN SignatureSize, IN VOID *Data, IN UINTN DataSize)
 {
-	if (!This || !Data || !DataSize || !Path)
+	if (!This || !Signature || !SignatureSize)
 		return EFI_INVALID_PARAMETER;
 
-	EfiConsoleTraceDebug(L"Attempting to verify buffer %s by MOK2 Verify "
-			     L"Protocol ...", Path);
+	if (DataSize && !Data)
+		return EFI_INVALID_PARAMETER;
 
-	UINT8 MokSBState = 1;
-	EFI_STATUS Status;
+	EfiConsoleTraceDebug(L"Attempting to verify signature by MOK2 Verify "
+			     L"Protocol ...");
 
-	Status = MokSecureBootState(&MokSBState);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	if (MokSBState == 1) {
-		EfiConsoleTraceDebug(L"Ignore to verify buffer for %s\n",
-				     Path);
+	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
+		EfiConsoleTraceDebug(L"Ignore to verify signature\n");
 		return EFI_SUCCESS;
 	}
 
-	EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
+	EFI_STATUS Status;
 
-	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
-				   (VOID **)&MokVerifyProtocol);
+	Status = MokVerifyPeImage(Data, DataSize);
 	if (EFI_ERROR(Status)) {
-		EfiConsoleTraceDebug(L"Attempt to verify buffer for %s with "
-				     L"LoadImage()\n", Path);
-
-		return EfiImageLoad(Path, Data, DataSize);
-	}
-
-	PE_COFF_LOADER_IMAGE_CONTEXT Context;
-
-	Status = MokVerifyProtocol->Context(MokVerifyProtocol, Data,
-					    DataSize, &Context);
-	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Succeeded to construct the context for "
-				     L"PE image\n");
-
-		EfiConsolePrintLevel Level;
-
-		Status = EfiConsoleGetVerbosity(&Level);
-		if (!EFI_ERROR(Status) && Level == CPL_DEBUG) {
-			UINT8 Sha256Hash[32];
-			UINT8 Sha1Hash[20];
-
-			Status = MokVerifyProtocol->Hash(Data, DataSize,
-							 &Context, Sha256Hash,
-							 Sha1Hash);
-			if (EFI_ERROR(Status)) {
-				EfiConsolePrintError(L"Failed to calculate the "
-						     L"hash for PE image "
-						     L"(err: 0x%x)\n", Status);
-				return Status;
-                        }
-
-			EfiLibraryHexDump(L"PE sha256 hash", Sha256Hash,
-					  sizeof(Sha256Hash));
-			EfiLibraryHexDump(L"PE sha1 hash", Sha1Hash,
-					  sizeof(Sha1Hash));
-		}
-
-		Status = MokVerifyProtocol->Verify(Data, DataSize);
+		Status = EfiImageLoad(NULL, Data, DataSize);
 		if (!EFI_ERROR(Status))
-			EfiConsoleTraceDebug(L"Succeeded to verify PE "
-					     L"image\n");
-		else
-			EfiConsoleTraceError(L"Failed to verify PE image "
-					     L"(err: 0x%x)\n", Status);
-
-		return Status;
-	}
-
-	return Status;
-}
-
-STATIC EFI_STATUS EFIAPI
-Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path,
-	       OUT VOID **Data, OUT UINTN *DataSize)
-{
-	if (!This || !Path || !Data || !DataSize)
-		return EFI_INVALID_PARAMETER;
-
-	if (*Data && *DataSize)
-		return This->VerifyBuffer(This, *Data, *DataSize, Path);
-
-	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
-			     L"Protocol ...", Path);
-
-	UINT8 MokSBState = 1;
-	EFI_STATUS Status;
-
-	Status = MokSecureBootState(&MokSBState);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	if (MokSBState == 1) {
-		EfiConsoleTraceDebug(L"Ignore to verify file %s\n", Path);
-		return EFI_SUCCESS;
-	}
+			EfiConsoleTraceDebug(L"Succeeded to verify signature "
+					     L"by MOK2 Verify Protocol\n");
+	} else
+		EfiConsoleTraceDebug(L"Succeeded to verify signature by MOK "
+				     L"Verify Protocol\n");
 
 	return EFI_SUCCESS;
 }
 
+STATIC EFI_STATUS EFIAPI
+Mok2VerifyFileBuffer(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN OUT VOID **Data,
+		     IN OUT UINTN *DataSize, IN CONST CHAR16 *Path)
+{
+	if (!This || !Data || !DataSize || !Path)
+		return EFI_INVALID_PARAMETER;
+
+	EfiConsoleTraceDebug(L"Attempting to verify file buffer %s by MOK2 "
+			     L"Verify Protocol ...\n", Path);
+
+	return EFI_UNSUPPORTED;
+}
+
+STATIC EFI_STATUS EFIAPI
+Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path)
+{
+	if (!This || !Path)
+		return EFI_INVALID_PARAMETER;
+
+	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
+			     L"Protocol ...", Path);
+
+	EFI_STATUS Status;
+
+	Status = EfiFileLoad(Path, NULL, 0);
+	if (!EFI_ERROR(Status))
+		EfiConsoleTraceDebug(L"Succeeded to verify file %s by MOK2 "
+				     L"Verify Protocol\n", Path);
+	else
+		EfiConsoleTraceDebug(L"Failed to verify file %s by MOK2 "
+				     L"Verify Protocol\n", Path);
+
+	return EFI_UNSUPPORTED;
+}
+
 STATIC EFI_MOK2_VERIFY_PROTOCOL Mok2VerifyProtocol = {
 	1,
-	Mok2VerifyFile,
-	Mok2VerifyBuffer,
+	Mok2VerifySignature,
+	Mok2VerifyFileBuffer,
+	Mok2VerifyFile
 };
 
 EFI_STATUS

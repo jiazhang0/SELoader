@@ -41,26 +41,35 @@ typedef struct _EFI_MOK2_VERIFY_PROTOCOL	EFI_MOK2_VERIFY_PROTOCOL;
 
 typedef
 EFI_STATUS
-(EFIAPI *EFI_MOK2_VERIFY_FILE) (
+(EFIAPI *EFI_MOK2_VERIFY_SIGNATURE) (
   IN EFI_MOK2_VERIFY_PROTOCOL *This,
-  IN CONST CHAR16             *Path,
-  OUT VOID                    **Data,
-  OUT UINTN                   *DataSize
+  IN VOID                     *Signature,
+  IN UINTN                    SignatureSize,
+  IN VOID                     *Data,
+  IN UINTN                    DataSize
   );
 
 typedef
 EFI_STATUS
-(EFIAPI *EFI_MOK2_VERIFY_BUFFER) (
+(EFIAPI *EFI_MOK2_VERIFY_FILE_BUFFER) (
   IN EFI_MOK2_VERIFY_PROTOCOL *This,
-  IN VOID                     *Data,
-  IN UINTN                    DataSize,
+  IN OUT VOID                 **Data,
+  IN OUT UINTN                *DataSize,
+  IN CONST CHAR16             *Path
+  );
+
+typedef
+EFI_STATUS
+(EFIAPI *EFI_MOK2_VERIFY_FILE) (
+  IN EFI_MOK2_VERIFY_PROTOCOL *This,
   IN CONST CHAR16             *Path
   );
 
 struct _EFI_MOK2_VERIFY_PROTOCOL {
         UINT8 Revision;
-        EFI_MOK2_VERIFY_FILE VerifyFILE;
-        EFI_MOK2_VERIFY_BUFFER VerifyBuffer;
+        EFI_MOK2_VERIFY_SIGNATURE VerifySignature;
+        EFI_MOK2_VERIFY_FILE_BUFFER VerifyFileBuffer;
+        EFI_MOK2_VERIFY_FILE VerifyFile;
 };
 
 extern EFI_GUID gEfiMok2VerifyProtocolGuid;

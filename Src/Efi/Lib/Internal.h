@@ -58,4 +58,7 @@ MokVerifyProtocolInstalled(BOOLEAN *Installed);
 EFI_STATUS
 Mok2VerifyInitialize(VOID);
 
+EFI_STATUS
+MokVerifyPeImage(VOID *Data, UINTN DataSize);
+
 #endif	/* __LIB_INTERNAL_H__ */

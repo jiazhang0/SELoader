@@ -33,6 +33,65 @@
 EFI_GUID gEfiMokVerifyProtocolGuid = EFI_MOK_VERIFY_PROTOCOL_GUID;
 
 EFI_STATUS
+MokVerifyPeImage(VOID *Data, UINTN DataSize)
+{
+	EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
+	EFI_STATUS Status;
+
+	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
+				   (VOID **)&MokVerifyProtocol);
+	if (EFI_ERROR(Status)) {
+		EfiConsoleTraceDebug(L"Failed to open MOK Verify Protocol "
+				     L"(err: 0x%x)\n");
+		return Status;
+	}
+
+	PE_COFF_LOADER_IMAGE_CONTEXT Context;
+
+	Status = MokVerifyProtocol->Context(MokVerifyProtocol, Data,
+					    DataSize, &Context);
+	if (!EFI_ERROR(Status)) {
+		EfiConsolePrintDebug(L"Succeeded to construct the context for "
+				     L"PE image\n");
+
+		EfiConsolePrintLevel Level;
+
+		Status = EfiConsoleGetVerbosity(&Level);
+		if (!EFI_ERROR(Status) && Level == CPL_DEBUG) {
+			UINT8 Sha256Hash[32];
+			UINT8 Sha1Hash[20];
+
+			Status = MokVerifyProtocol->Hash(Data, DataSize,
+							 &Context, Sha256Hash,
+							 Sha1Hash);
+			if (EFI_ERROR(Status)) {
+				EfiConsolePrintError(L"Failed to calculate the "
+						     L"hash for PE image "
+						     L"(err: 0x%x)\n", Status);
+				return Status;
+                        }
+
+			EfiLibraryHexDump(L"PE sha256 hash", Sha256Hash,
+					  sizeof(Sha256Hash));
+			EfiLibraryHexDump(L"PE sha1 hash", Sha1Hash,
+					  sizeof(Sha1Hash));
+		}
+
+		Status = MokVerifyProtocol->Verify(Data, DataSize);
+		if (!EFI_ERROR(Status))
+			EfiConsoleTraceDebug(L"Succeeded to verify PE "
+					     L"image\n");
+		else
+			EfiConsoleTraceError(L"Failed to verify PE image "
+					     L"(err: 0x%x)\n", Status);
+
+		return Status;
+	}
+
+	return Status;
+}
+
+EFI_STATUS
 MokVerifyProtocolInstalled(BOOLEAN *Installed)
 {
 	if (!Installed)
