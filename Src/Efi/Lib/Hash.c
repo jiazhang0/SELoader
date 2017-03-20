@@ -105,11 +105,11 @@ InitializeHashService(VOID)
 		Status = EfiProtocolLocate(&gEfiHashServiceBindingProtocolGuid,
 					   (VOID **)&HashServiceBindingProtocol);
 		if (EFI_ERROR(Status)) {
-			EfiConsoleTraceDebug(L"BIOS doesn't support any hash "
+			EfiConsolePrintDebug(L"BIOS doesn't support any hash "
 					     L"service binding protocol "
 					     L"(err: 0x%x).\nAttempting to "
 					     L"load Hash2DxeCrypto driver "
-					     L"...", Status);
+					     L"...\n", Status);
 			
 			Status = LoadHash2DxeCrypto();
 			if (EFI_ERROR(Status))

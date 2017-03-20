@@ -205,8 +205,8 @@ EFI_STATUS
 EfiLoadSignature(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize,
 		 BOOLEAN CheckSignature)
 {
-	EfiConsoleTraceDebug(L"Attempting to load the attached signature "
-			     L"file %s.p7a %s...", Path,
+	EfiConsolePrintDebug(L"Attempting to load the attached signature "
+			     L"file %s.p7a %s...\n", Path,
 			     CheckSignature == TRUE ? L"" :
 						      L"for the extracted "
 						      L"content ");
@@ -258,7 +258,7 @@ EfiLoadSignature(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize,
 		return Status;
 	}
 
-	EfiConsoleTraceDebug(L"Attempting to load the detached signature "
+	EfiConsolePrintDebug(L"Attempting to load the detached signature "
 			     L"file %s.p7s ...\n", Path);
 
 	Status = LoadFile(Path, L".p7s", &Signature, &SignatureSize);
@@ -301,7 +301,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	EFI_STATUS Status;
 
 	CheckSignature = LoadSignatureRequired(Path);
-	EfiConsoleTraceDebug(L"Signature verification is %srequired",
+	EfiConsolePrintDebug(L"Signature verification is %srequired\n",
 			     CheckSignature == TRUE ? L"" : L"not ");
 	if (CheckSignature == FALSE) {
 		Status = LoadFile(Path, NULL, Data, DataSize);
