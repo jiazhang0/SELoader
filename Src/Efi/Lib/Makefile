@@ -12,7 +12,7 @@ OBJS_$(LIB_NAME) := \
 	Stall.o \
 	Console.o \
 	ResetSystem.o \
-	Pkcs7.o \
+	Pkcs7Verify.o \
 	Hash.o \
 	Signature.o \
 	SecurityPolicy.o \
