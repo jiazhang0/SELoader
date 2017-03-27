@@ -1,3 +1,10 @@
+Version 0.3.0
+=============
+Released: 2017-03-27
+
+- Mok2Verify now supports its first interface Mok2VerifyFile() to verify a
+  file specified by the path parameter.
+
 Version 0.2.1
 =============
 Released: 2017-03-18
