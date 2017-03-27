@@ -92,17 +92,20 @@ Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path)
 	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
 			     L"Protocol ...", Path);
 
+	VOID *Data = NULL;
+	UINTN DataSize = 0;
 	EFI_STATUS Status;
 
-	Status = EfiFileLoad(Path, NULL, 0);
-	if (!EFI_ERROR(Status))
+	Status = EfiFileLoad(Path, &Data, &DataSize);
+	if (!EFI_ERROR(Status)) {
+		EfiMemoryFree(Data);
 		EfiConsoleTraceDebug(L"Succeeded to verify file %s by MOK2 "
 				     L"Verify Protocol\n", Path);
-	else
+	} else
 		EfiConsoleTraceDebug(L"Failed to verify file %s by MOK2 "
 				     L"Verify Protocol\n", Path);
 
-	return EFI_UNSUPPORTED;
+	return EFI_SUCCESS;
 }
 
 STATIC EFI_MOK2_VERIFY_PROTOCOL Mok2VerifyProtocol = {
