@@ -240,6 +240,13 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 	if (SignedContent && !SignedContentSize)
 		return EFI_INVALID_PARAMETER;
 
+	if (SignedContent && *SignedContent && SignedContentSize &&
+	    !*SignedContentSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (!SignedContent && SignedContentSize && *SignedContentSize)
+		return EFI_INVALID_PARAMETER;
+
 	EFI_STATUS Status;
 
 	if (Pkcs7Initialized == FALSE) {
@@ -297,12 +304,20 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 
 		if (ExtractedContent != FixedContent)
 			EfiMemoryFree(ExtractedContent);
+
+		*SignedContentSize = MIN(*SignedContentSize,
+					 ExtractedContentSize);
 	} else {
 		if (SignedContent)
 			*SignedContent = ExtractedContent;
 
-		if (SignedContentSize)
-			*SignedContentSize = ExtractedContentSize;
+		if (SignedContentSize) {
+			if (!*SignedContentSize)
+				*SignedContentSize = ExtractedContentSize;
+			else
+				*SignedContentSize = MIN(*SignedContentSize,
+							 ExtractedContentSize);
+		}
 	}
 
 	EfiConsolePrintDebug(L"Succeeded to verify PKCS#7 attached "
