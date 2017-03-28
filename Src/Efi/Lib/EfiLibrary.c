@@ -88,3 +88,52 @@ EfiLibraryHexDump(CONST CHAR16 *Prompt, UINT8 *Data, UINTN DataSize)
 
 	EfiConsolePrintDebug(L"\n");
 }
+
+EFI_STATUS
+EfiLibraryVectorizedBufferEnter(VOID **Buffer, UINTN *BufferSize)
+{
+	if (Buffer && !BufferSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (Buffer && *Buffer && BufferSize &&
+	    !*BufferSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (!Buffer && BufferSize && *BufferSize)
+		return EFI_INVALID_PARAMETER;
+
+	return EFI_SUCCESS;
+}
+
+EFI_STATUS
+EfiLibraryVectorizedBufferLeave(VOID **Buffer, UINTN *BufferSize,
+				VOID *Data, UINTN DataSize,
+				BOOLEAN Duplication)
+{
+	if (BufferSize) {
+		if (!*BufferSize)
+			*BufferSize = DataSize;
+		else
+			*BufferSize = MIN(*BufferSize, DataSize);
+	}
+
+	if (Buffer) {
+		if (!*Buffer) {
+			if (Duplication == FALSE) {
+				*Buffer = Data;
+				return EFI_SUCCESS;
+			} else {
+				EFI_STATUS Status;
+
+				Status = EfiMemoryAllocate(*BufferSize,
+							   Buffer);
+				if (EFI_ERROR(Status))
+					return Status;
+			}
+		}
+
+		MemCpy(*Buffer, Data, *BufferSize);
+	}
+
+	return EFI_SUCCESS;
+}

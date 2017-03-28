@@ -45,6 +45,14 @@ VOID
 EfiLibraryHexDump(CONST CHAR16 *Prompt, UINT8 *Data, UINTN DataSize);
 
 EFI_STATUS
+EfiLibraryVectorizedBufferEnter(VOID **Buffer, UINTN *BufferSize);
+
+EFI_STATUS
+EfiLibraryVectorizedBufferLeave(VOID **Buffer, UINTN *BufferSize,
+				VOID *Data, UINTN DataSize,
+				BOOLEAN Duplication);
+
+EFI_STATUS
 EfiMemoryAllocate(IN UINTN Size, OUT VOID **AllocatedBuffer);
 
 VOID
