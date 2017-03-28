@@ -146,7 +146,7 @@ LoadFile(CONST CHAR16 *Path, CONST CHAR16 *Suffix, VOID **Data,
 	if (FileSize) {
 		if (!*Data) {
 			/* Return truncated length */
-			if (*DataSize)
+			if (*DataSize && *DataSize < FileSize)
 				FileSize = *DataSize;
 
 			Status = EfiMemoryAllocate(FileSize, &FileBuffer);
