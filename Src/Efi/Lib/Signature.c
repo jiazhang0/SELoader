@@ -204,14 +204,22 @@ ParseTagDirectory(SEL_SIGNATURE_CONTEXT *Context)
 }
 
 STATIC EFI_STATUS
-VerifySelSignature(SEL_SIGNATURE_CONTEXT *Context, VOID **Data, UINTN *DataSize)
+VerifySelSignature(SEL_SIGNATURE_CONTEXT *Context, VOID **Data,
+		   UINTN *DataSize)
 {
 	EFI_STATUS Status = EFI_SUCCESS;
 
 	if (Context->HashAlgorithm) {
-		if (!*Data || !*DataSize) {
+		if (!Data || !*Data) {
 			EfiConsolePrintError(L"No data to be verified for "
 					     L"hash calculation\n");
+			return EFI_UNSUPPORTED;
+		}
+
+		if (!DataSize || !*DataSize) {
+			EfiConsolePrintError(L"Invalid data size to be "
+					     L"verified for hash "
+					     L"calculation\n");
 			return EFI_UNSUPPORTED;
 		}
 
@@ -246,25 +254,36 @@ VerifySelSignature(SEL_SIGNATURE_CONTEXT *Context, VOID **Data, UINTN *DataSize)
 			return EFI_SECURITY_VIOLATION;
 		}
 
+		EfiMemoryFree(Hash);
+
 		EfiConsolePrintDebug(L"Consistent hash comparison with "
 				     L"SELoader signature\n");
 	} else {
-		if (*Data || *DataSize)
-			EfiConsolePrintDebug(L"Ignore the input data\n");
-
 		if (!Context->Content || !Context->ContentSize) {
 			EfiConsolePrintError(L"Invalid content for returning "
 					     L"the data\n");
 			return EFI_UNSUPPORTED;
 		}
 
-		Status = EfiMemoryAllocate(Context->ContentSize, Data);
-		if (!EFI_ERROR(Status)) {
-			*DataSize = Context->ContentSize;
+		if (Data && *Data && *DataSize) {
+			*DataSize = MIN(*DataSize, Context->ContentSize);
 			MemCpy(*Data, Context->Content, *DataSize);
-			EfiConsolePrintDebug(L"Content attached in SELoader "
-					     L"signature\n");
-			return EFI_SUCCESS;
+		} else if (DataSize) {
+			if (!*DataSize)
+				*DataSize = Context->ContentSize;
+			else
+				*DataSize = MIN(*DataSize,
+						Context->ContentSize);
+
+			if (Data) {
+				Status = EfiMemoryAllocate(*DataSize, Data);
+				if (EFI_ERROR(Status))
+					return Status;
+
+				MemCpy(*Data, Context->Content, *DataSize);
+				EfiConsolePrintDebug(L"Content attached in "
+						     L"SELoader signature\n");
+			}
 		}
 	}
 
@@ -294,7 +313,13 @@ EFI_STATUS
 EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
 			   VOID **Data, UINTN *DataSize)
 {
-	if (!Signature || !SignatureSize || !Data || !DataSize)
+	if (!Signature || !SignatureSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (Data && !DataSize)
+		return EFI_INVALID_PARAMETER;
+
+	if (Data && *Data && DataSize && !*DataSize)
 		return EFI_INVALID_PARAMETER;
 
 	VOID *SelSignature = NULL;
