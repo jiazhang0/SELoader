@@ -5,6 +5,7 @@ Src/Efi/BuildInfo.c
 *.efi
 *.efi.debug
 *.signed
+*.p7b
 *.p7a
 *.p7s
 *.patch
