@@ -42,12 +42,19 @@ LoadConfig(VOID)
 	EfiConsoleTraceDebug(L"Attempting to load SELoader configuration "
 			     SELOADER_CONFIGURATION);
 
-	VOID *Config = NULL;
-	UINTN ConfigSize = 0;
+	BOOLEAN ParseContent = FALSE;
 	EFI_STATUS Status;
 
-	Status = EfiFileLoad(SELOADER_CONFIGURATION, &Config, &ConfigSize);
-	
+	if (ParseContent == FALSE)
+		Status = EfiFileLoad(SELOADER_CONFIGURATION, NULL, 0);
+	else {
+		VOID *Config = NULL;
+		UINTN ConfigSize = 0;
+
+		Status = EfiFileLoad(SELOADER_CONFIGURATION, &Config,
+				     &ConfigSize);
+	}
+
 	/*
 	 * TODO: parse the configuration to allow to customize the
 	 * behavior of SELoader.
