@@ -28,6 +28,7 @@
 
 #include <Efi.h>
 #include <EfiLibrary.h>
+#include <BaseLibrary.h>
 
 EFI_SYSTEM_TABLE *gST;
 EFI_BOOT_SERVICES *gBS;
