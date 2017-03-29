@@ -50,7 +50,7 @@ OBJS_$(EFI_NAME) := \
 all: $(EFI_TARGET).signed Makefile
 
 install: $(EFI_TARGET).signed
-	@$(INSTALL) -m 0600 $< $(EFI_DESTDIR)/$(EFI_TARGET)
+	@$(INSTALL) -m 0600 $< $(EFI_DESTDIR)/$(EFI_NAME)$(EFI_ARCH).efi
 
 clean:
 	@$(RM) -f $(EFI_TARGET).signed $(EFI_TARGET) $(OBJS_$(EFI_NAME)) \
