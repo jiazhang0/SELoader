@@ -264,13 +264,8 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 			NULL, 0, AllowedDb, RevokedDb, TimeStampDb,
 			ExtractedContent, &ExtractedContentSize);
 	if (Status == EFI_BUFFER_TOO_SMALL) {
-		EfiConsolePrintLevel Level;
-
-		Status = EfiConsoleGetVerbosity(&Level);
-		if (!EFI_ERROR(Status) && Level == CPL_DEBUG)
-			Status = EfiMemoryAllocate(ExtractedContentSize,
-						   (VOID **)&ExtractedContent);
-
+		Status = EfiMemoryAllocate(ExtractedContentSize,
+					   (VOID **)&ExtractedContent);
 		if (!EFI_ERROR(Status))
 			Status = Verify(Pkcs7VerifyProtocol, Signature,
 					SignatureSize, NULL, 0, AllowedDb,
