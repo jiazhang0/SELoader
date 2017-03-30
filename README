@@ -1,27 +1,37 @@
 Secure EFI Loader
 =================
 
-The SELoader is designed to authenticate the non-PE files which cannot
-be verified by the MOK verify protocol supplied by shim loader, such as grub
-configuration, initrd, grub modules and so on.
+The SELoader is designed to authenticate the non-PE files, such as grub
+configuration, initrd, grub modules, which cannot be verified by the MOK
+Verify Protocol registered by shim loader.
 
-The SELoader employs PKCS7 Verify Protocol available since UEFI Specification
-version 2.5 to verify the signature to prove the integrity of checked file. If
-BIOS doesn't support it, a pre-built Pkcs7VerifyDxe driver is provided.
+In order to conveniently authenticate the PE file with gBS->LoadImage()
+and gBS->StartImage(), the SELoader hooks EFI Security2 Architectural
+Protocol and employs MOK Verify Protocol to verify the PE file. If only
+UEFI Secure Boot is enabled, the SELoader just simplily calls
+gBS->LoadImage() and gBS->StartImage() to allow BIOS to verify PE file.
 
-In order to estabilish the chain of trust, the SELoader is required to be
+The SELoader publishes MOK2 Verify Protocol which provides a flexible
+interface to allow the bootloader to verify the file, file buffer or
+memory buffer without knowing the file format.
+
+In order to establish the chain of trust, the SELoader is required to be
 signed by a private key corresponding to a DB certificate, the shim
-certificate, the vendor certificate or a shim MOK certificate. The specifical
+certificate, the vendor certificate or a shim MOK certificate. The specific
 key is determined by the Secure Boot scheme you will use.
 
-Using UEFI Secure Boot, MOK verify protocol and SELoader together, the boot
-process will be completely trustworthy.
+Using UEFI Secure Boot, MOK Verify Protocol and the SELoader together, the
+boot process is completely trustworthy.
 
-Use Pkcs7VerifyDxe.efi
-----------------------
-If your BIOS doesn't support PKCS7 Verify Protocol, it is recommended to
-update to the latest. If the latest still doesn't support it, the SELoader
-is able to attempt to load the Pkcs7VerifyDxe.efi driver if available.
+EFI Pkcs7 Verify Protocol
+-------------------------
+The SELoader employs EFI PKCS7 Verify Protocol available since UEFI
+Specification version 2.5 to verify the signature to prove the integrity
+of checked file.
+
+If your BIOS doesn't support this protocol, it is recommended to update
+the BIOS to the latest. If the latest still doesn't support the protocol,
+the SELoader is able to load the Pkcs7VerifyDxe.efi driver if available.
 Usually, the Pkcs7VerifyDxe.efi driver is located in the directory where
 the SELoader resides on ESP.
 
@@ -37,11 +47,14 @@ References
 libsign - the signing tool used to generate SELoader PKCS#7 signature
 https://github.com/jiazhang0/libsign
 
+Mok2Verify patch for grub
+https://github.com/WindRiver-OpenSourceLabs/meta-secure-env/blob/pulsar-8/recipes-bsp/grub/grub-efi/mok2verify-support-to-verify-non-PE-file-with-PKCS-7.patch
+
+meta-secure-env - a practical secure boot implementation based on oe-core
+https://github.com/WindRiver-OpenSourceLabs/meta-secure-env
+
 shim - implement MOK verify protocol
 https://github.com/rhinstaller/shim
 
 edk2 - UEFI-related header files
 https://github.com/tianocore/edk2
-
-meta-secure-env - a practical secure boot implementation based on oe-core
-https://github.com/WindRiver-OpenSourceLabs/meta-secure-env

@@ -1,12 +1,16 @@
-This directory contains a pre-built drivers for PKCS#7 signature checking
-used by SELoader.
+This directory contains the pre-built drivers for PKCS#7 signature checking
+and hash calculation used by SELoader.
 
 If your BIOS doesn't support PKCS7 Verify Protocol or any Hash Protocol, put
 these drivers to the location where the SELoader is located on ESP.
+
 Optionally, you can build the drivers from the scratch.
 
+Eventually, if Secure Boot is enabled, you need to sign the drivers with the
+proper key in advance.
+
 Pre-built binary information
-----------------------------
+============================
 
 Upstream: git://github.com/tianocore/edk2.git
 Commit: e9429e7997b8e668126d71b8030cc3a96c36a652
@@ -17,8 +21,14 @@ Sha256sum:
    ec3a8fbcbe762beadde9281e7ec6660303b2ed10e4d0679f34d83be831200c72
 
 Build instruction
------------------
+=================
 
+Use libedk2
+-----------
+Refer to https://github.com/jiazhang0/libedk2
+
+Manually build
+--------------
 $ git clone git://github.com/tianocore/edk2.git
 $ cd edk2
 
@@ -38,9 +48,10 @@ The generated binaries are then retrieved under
 Build/SecurityPkg/RELEASE_GCC5/X64/.
 
 Sign the drivers
-----------------
-If the drivers are required, you need to sign them with the private key
-you used to sign the SELoader, e.g,
+================
+
+If Secure Boot is enabled, you need to sign them with the private key
+you used to sign the drivers. For example,
 
 $ sbsign --cert <x509_cert> --key <private_key> Pkcs7VerifyDxe.efi
 $ sbsign --cert <x509_cert> --key <private_key> Hash2DxeCrypto.efi
