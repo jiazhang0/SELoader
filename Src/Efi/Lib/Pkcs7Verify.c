@@ -171,7 +171,7 @@ InitializePkcs7(VOID)
 
 	Pkcs7Initialized = TRUE;
 
-	EfiConsoleTraceInfo(L"PKCS#7 Verify Protocol loaded");
+	EfiConsolePrintInfo(L"PKCS#7 Verify Protocol loaded\n");
 
 	return EFI_SUCCESS;
 
