@@ -1,0 +1,3 @@
+- Support to transparently verify PE and non-PE file in MOK2 Verify Protocol
+- Implement the hook function for Security Architectural Protocol
+- Implement MOK Verify Protocol without shim
