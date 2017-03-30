@@ -345,6 +345,8 @@ EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
 	if (EFI_ERROR(Status))
 		return Status;
 
+	EfiConsolePrintInfo(L"Succeeded to verify the attached signature\n");
+
 	return EFI_SUCCESS;
 }
 
@@ -369,6 +371,10 @@ EfiSignatureVerifyBuffer(VOID *Signature, UINTN SignatureSize,
 	Status = Pkcs7VerifyDetachedSignature(Hash, HashSize,
 					      Signature, SignatureSize);
 	EfiMemoryFree(Hash);
+
+	if (!EFI_ERROR(Status))
+		EfiConsolePrintInfo(L"Succeeded to verify the detached "
+				    L"signature\n");
 
 	return Status;
 }
