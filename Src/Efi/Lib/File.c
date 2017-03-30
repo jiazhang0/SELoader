@@ -80,11 +80,11 @@ OpenFile(CONST CHAR16 *Path, UINT64 OpenMode, EFI_FILE_HANDLE *FileHandle,
 		Root->Close(Root);
 
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to open file %s for %s "
-				     L"(err: 0x%x)\n", FilePath,
-				     OpenMode & EFI_FILE_MODE_WRITE ? L"write" :
-								      L"read",
-				     Status);
+		if (Status != EFI_NOT_FOUND)
+			EfiConsolePrintError(L"Failed to open file %s for %s "
+					     L"(err: 0x%x)\n", FilePath,
+					     OpenMode & EFI_FILE_MODE_WRITE ?
+					     L"write" : L"read", Status);
 		EfiMemoryFree(FilePath);
 		return Status;
 	}
@@ -226,7 +226,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		 * file doesn't exist.
 		 */
 		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
-			return Status;
+			goto out;
 
 		EfiConsolePrintDebug(L"Not found the file %s", Path);
 	}
@@ -283,7 +283,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 			EfiMemoryFree(ExtractedData);
 
-			return Status;
+			goto out;
 		}
 	}
 
@@ -311,7 +311,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			EfiConsolePrintError(L"Failed to load the file "
 					     L"%s for verifying .p7b (err: "
 					     L"0x%x)\n", Path, Status);
-			return Status;
+			goto out;
 		}
 
 		Status = EfiSignatureVerifyAttached(Signature, SignatureSize,
@@ -326,7 +326,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			if (!Data || *Data)
 				EfiMemoryFree(RealData);
 
-			return Status;
+			goto out;
 		}
 	}
 
@@ -344,7 +344,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			EfiConsolePrintError(L"Failed to load the file "
 					     L"%s for verifying .p7s (err: "
 					     L"0x%x)\n", Path, Status);
-			return Status;
+			goto out;
 		}
 
 		Status = EfiSignatureVerifyBuffer(Signature, SignatureSize,
@@ -359,11 +359,15 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			if (!Data || *Data)
 				EfiMemoryFree(RealData);
 
-			return Status;
+			goto out;
 		}
 	} else
 		EfiConsolePrintError(L"Failed to load the signature file "
 				     L"%s.p7a|.p7b|.p7s\n", Path);
+
+out:
+	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x",
+			    Path, Status);
 
 	return Status;
 }
