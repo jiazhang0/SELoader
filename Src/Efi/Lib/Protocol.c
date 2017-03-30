@@ -53,6 +53,11 @@ EfiProtocolOpen(EFI_HANDLE Handle, CONST EFI_GUID *Protocol, VOID **Interface)
 EFI_STATUS
 EfiProtocolLocate(CONST EFI_GUID *Protocol, VOID **Interface)
 {
+	VOID *TempInterface;
+
+	if (!Interface)
+		Interface = &TempInterface;
+
 	return gBS->LocateProtocol((EFI_GUID *)Protocol, NULL, Interface);
 }
 
