@@ -310,15 +310,22 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 		*SignedContentSize = MIN(*SignedContentSize,
 					 ExtractedContentSize);
 	} else {
-		if (SignedContent)
-			*SignedContent = ExtractedContent;
-
 		if (SignedContentSize) {
 			if (!*SignedContentSize)
 				*SignedContentSize = ExtractedContentSize;
 			else
 				*SignedContentSize = MIN(*SignedContentSize,
 							 ExtractedContentSize);
+		}
+
+		if (SignedContent) {
+			if (ExtractedContent == FixedContent) {
+				Status = EfiMemoryAllocate(*SignedContentSize,
+							   SignedContent);
+				if (!EFI_ERROR(Status))
+					MemCpy(*SignedContent, ExtractedContent,
+					       *SignedContentSize);
+			}
 		}
 	}
 
