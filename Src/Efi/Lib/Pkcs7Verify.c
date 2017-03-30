@@ -39,6 +39,13 @@ STATIC EFI_SIGNATURE_LIST **RevokedDb;
 /* TODO: Support Dbt */
 STATIC EFI_SIGNATURE_LIST *TimeStampDb[1] = { NULL };
 
+/*
+ * The minimal size of buffer for the extracted content retrieved from the
+ * attached signature. This setting may save boot time if the size of
+ * extracted content is smaller than this setting.
+ */
+#define MIN_CONTENT_SIZE		256
+
 STATIC EFI_STATUS
 MergeSignatureList(EFI_SIGNATURE_LIST ***Destination,
 		   EFI_SIGNATURE_LIST *Source1, UINTN SourceSize1,
@@ -256,7 +263,7 @@ Pkcs7VerifyAttachedSignature(VOID **SignedContent, UINTN *SignedContentSize,
 	}
 
 	EFI_PKCS7_VERIFY_BUFFER Verify = Pkcs7VerifyProtocol->VerifyBuffer;
-	UINT8 FixedContent[sizeof(EFI_HASH2_OUTPUT)];
+	UINT8 FixedContent[MIN_CONTENT_SIZE];
 	UINTN ExtractedContentSize = sizeof(FixedContent);
 	UINT8 *ExtractedContent = FixedContent;
 
