@@ -1,3 +1,10 @@
+Version 0.4.0
+=============
+Released: 2017-03-30
+
+- Support to use MokVerify Protocol to verify PE image.
+- Fully support .p7a/.p7b/.p7s signature.
+
 Version 0.3.0
 =============
 Released: 2017-03-27
