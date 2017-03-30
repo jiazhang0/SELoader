@@ -45,6 +45,8 @@
 #include <Edk2/Library/UefiBootServicesTableLib.h>
 #include <Edk2/Library/UefiRuntimeServicesTableLib.h>
 #include <Edk2/Library/PeCoffLib.h>
+#include <Edk2/Protocol/Security.h>
+#include <Edk2/Protocol/Security2.h>
 
 #ifdef GNU_EFI_VERSION
 #include <GnuEfi.h>

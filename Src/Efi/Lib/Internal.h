@@ -61,4 +61,10 @@ Mok2VerifyInitialize(VOID);
 EFI_STATUS
 MokVerifyPeImage(VOID *Data, UINTN DataSize);
 
+EFI_STATUS
+HookSap(VOID);
+
+EFI_STATUS
+HookSap2(VOID);
+
 #endif	/* __LIB_INTERNAL_H__ */

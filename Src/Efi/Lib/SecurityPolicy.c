@@ -90,7 +90,7 @@ InitializeSecurityPolicy(VOID)
 	BOOLEAN MokVerifyInstalled = FALSE;
 
 	Status = MokVerifyProtocolInstalled(&MokVerifyInstalled);
-	if (!EFI_ERROR(Status))
+	if (!EFI_ERROR(Status) && MokVerifyInstalled == TRUE)
 		EfiConsolePrintDebug(L"MOK Verify Protocol installed\n");
 
 	UINT8 MokSBState = 1;
@@ -116,6 +116,9 @@ InitializeSecurityPolicy(VOID)
 
 	if (UefiSecureBootProvisioned == TRUE && SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
+
+		HookSap();
+		HookSap2();
 
 		if (MokSecureBootProvisioned == TRUE && MokSBState == 0)
 			MokSecureBootEnabled = TRUE;

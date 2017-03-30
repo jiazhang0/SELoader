@@ -247,9 +247,6 @@ EFI_STATUS
 EfiImageExecute(CONST CHAR16 *Path);
 
 EFI_STATUS
-EfiImageExecuteSecure(CONST CHAR16 *Path);
-
-EFI_STATUS
 EfiImageExecuteDriver(CONST CHAR16 *Path);
 
 EFI_STATUS

@@ -41,15 +41,14 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
 				   (VOID **)&MokVerifyProtocol);
 	if (EFI_ERROR(Status)) {
-		EfiConsoleTraceDebug(L"Failed to open MOK Verify Protocol "
-				     L"(err: 0x%x)\n");
+		EfiConsolePrintDebug(L"Failed to open MOK Verify Protocol "
+				     L"(err: 0x%x)\n", Status);
 		return Status;
 	}
 
 	PE_COFF_LOADER_IMAGE_CONTEXT Context;
 
-	Status = MokVerifyProtocol->Context(MokVerifyProtocol, Data,
-					    DataSize, &Context);
+	Status = MokVerifyProtocol->Context(Data, DataSize, &Context);
 	if (!EFI_ERROR(Status)) {
 		EfiConsolePrintDebug(L"Succeeded to construct the context for "
 				     L"PE image\n");

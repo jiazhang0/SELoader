@@ -59,7 +59,6 @@ EFI_STATUS
 typedef
 EFI_STATUS
 (*EFI_MOK_CONTEXT) (
-  IN EFI_MOK_VERIFY_PROTOCOL      *This,
   IN VOID                         *Data,
   IN UINTN                        DataSize,
   IN PE_COFF_LOADER_IMAGE_CONTEXT *Context
