@@ -6,7 +6,7 @@ include $(TOPDIR)/Version.mk
 SUFFIXES += .efi .efi.signed
 
 %.so: %.o
-	@$(LD) $(LDFLAGS) -o $@ --start-group $^ \
+	$(LD) $(LDFLAGS) -o $@ --start-group $^ \
 	    $(LIB_GCC) -lgnuefi -lefi --end-group
 	@echo '--------------- List unresolved symbols ---------------'
 	@! $(NM) $@ | grep -iw u
@@ -26,7 +26,7 @@ SUFFIXES += .efi .efi.signed
 	    --target efi-app-$(ARCH) $^ $@
 
 %.efi.signed: %.efi $(SIGNING_CERT) $(SIGNING_KEY)
-	@$(SBSIGN) --cert $(SIGNING_CERT) \
+	$(SBSIGN) --cert $(SIGNING_CERT) \
 	    --key $(SIGNING_KEY) $< 2>/dev/null || { \
 	        echo "Failed to sign $<"; \
                 exit 1; \
