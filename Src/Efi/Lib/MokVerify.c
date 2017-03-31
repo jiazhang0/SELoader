@@ -46,17 +46,17 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 		return Status;
 	}
 
-	PE_COFF_LOADER_IMAGE_CONTEXT Context;
+	EfiConsolePrintLevel Level;
 
-	Status = MokVerifyProtocol->Context(Data, DataSize, &Context);
-	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Succeeded to construct the context for "
-				     L"PE image\n");
+	Status = EfiConsoleGetVerbosity(&Level);
+	if (!EFI_ERROR(Status) && Level == CPL_DEBUG) {
+		PE_COFF_LOADER_IMAGE_CONTEXT Context;
 
-		EfiConsolePrintLevel Level;
+		Status = MokVerifyProtocol->Context(Data, DataSize, &Context);
+		if (!EFI_ERROR(Status)) {
+			EfiConsolePrintDebug(L"Succeeded to construct the context for "
+					     L"PE image\n");
 
-		Status = EfiConsoleGetVerbosity(&Level);
-		if (!EFI_ERROR(Status) && Level == CPL_DEBUG) {
 			UINT8 Sha256Hash[32];
 			UINT8 Sha1Hash[20];
 
@@ -75,17 +75,14 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 			EfiLibraryHexDump(L"PE sha1 hash", Sha1Hash,
 					  sizeof(Sha1Hash));
 		}
-
-		Status = MokVerifyProtocol->Verify(Data, DataSize);
-		if (!EFI_ERROR(Status))
-			EfiConsoleTraceDebug(L"Succeeded to verify PE "
-					     L"image\n");
-		else
-			EfiConsoleTraceError(L"Failed to verify PE image "
-					     L"(err: 0x%x)\n", Status);
-
-		return Status;
 	}
+
+	Status = MokVerifyProtocol->Verify(Data, DataSize);
+	if (!EFI_ERROR(Status))
+		EfiConsoleTraceDebug(L"Succeeded to verify PE image\n");
+	else
+		EfiConsoleTraceError(L"Failed to verify PE image "
+				     L"(err: 0x%x)\n", Status);
 
 	return Status;
 }
