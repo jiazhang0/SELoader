@@ -55,8 +55,10 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 	/* Chain original security policy */
 	Status = OriginalFileAuthentication(This, DevicePath, FileBuffer,
 					    FileSize, BootPolicy);
-	if (EFI_ERROR(Status))
+	if (EFI_ERROR(Status)) {
+		EfiConsolePrintError(L"Failed to verify PE image with DB\n");
 		return Status;
+	}
 
 	return EFI_SUCCESS;
 }
