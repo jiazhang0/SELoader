@@ -253,3 +253,9 @@ EfiSecurityPolicySecureBootEnabled(VOID)
 
 	return Result;
 }
+
+VOID
+SecurityPolicyInitialize(VOID)
+{
+	InitializeSecurityPolicy();
+}

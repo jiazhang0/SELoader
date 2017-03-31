@@ -67,4 +67,7 @@ HookSap(VOID);
 EFI_STATUS
 HookSap2(VOID);
 
+VOID
+SecurityPolicyInitialize(VOID);
+
 #endif	/* __LIB_INTERNAL_H__ */

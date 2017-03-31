@@ -30,6 +30,8 @@
 #include <EfiLibrary.h>
 #include <BaseLibrary.h>
 
+#include "Internal.h"
+
 EFI_SYSTEM_TABLE *gST;
 EFI_BOOT_SERVICES *gBS;
 EFI_RUNTIME_SERVICES *gRT;
@@ -71,8 +73,12 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	EfiConsolePrintLevel Level;
 
 	Status = EfiConsoleGetVerbosity(&Level);
-	if (!EFI_ERROR(Status) && Level == CPL_DEBUG)
-		EfiSecurityPolicyPrint();
+	if (!EFI_ERROR(Status)) {
+		if (Level != CPL_DEBUG)
+			SecurityPolicyInitialize();
+		else
+			EfiSecurityPolicyPrint();
+	}
 
 	return Status;
 }
