@@ -36,6 +36,7 @@
 #  define SELOADER_CHAINLOADER			L"grub" EFI_ARCH L".efi"
 #endif
 
+#if 0
 STATIC EFI_STATUS
 LoadConfig(VOID)
 {
@@ -65,6 +66,13 @@ LoadConfig(VOID)
 
 	return Status;
 }
+#else
+STATIC EFI_STATUS
+LoadConfig(VOID)
+{
+	return EFI_UNSUPPORTED;
+}
+#endif
 
 STATIC EFI_STATUS
 LaunchLoader(VOID)
