@@ -67,7 +67,7 @@ Mok2VerifySignature(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Signature,
 		EfiConsoleTraceDebug(L"Succeeded to verify signature by MOK "
 				     L"Verify Protocol\n");
 
-	return EFI_SUCCESS;
+	return Status;
 }
 
 STATIC EFI_STATUS EFIAPI
@@ -105,7 +105,7 @@ Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path)
 		EfiConsoleTraceDebug(L"Failed to verify file %s by MOK2 "
 				     L"Verify Protocol\n", Path);
 
-	return EFI_SUCCESS;
+	return Status;
 }
 
 STATIC EFI_MOK2_VERIFY_PROTOCOL Mok2VerifyProtocol = {
