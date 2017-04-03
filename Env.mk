@@ -35,8 +35,8 @@ LDFLAGS := --warn-common --no-undefined --fatal-warnings \
 CFLAGS := -std=gnu11 -Wall -Wsign-compare -Werror \
 	  $(EXTRA_CFLAGS) $(addprefix $(join -Wl,,),$(LDFLAGS))
 
-SIGNING_KEY ?= $(TOPDIR)/Key/efi_sb_keys/DB.key
-SIGNING_CERT ?= $(TOPDIR)/Key/efi_sb_keys/DB.pem
+SIGNING_KEY ?= $(TOPDIR)/Key/mok_sb_keys/vendor_cert.key
+SIGNING_CERT ?= $(TOPDIR)/Key/mok_sb_keys/vendor_cert.pem
 
 ifneq ($(DEBUG_BUILD),)
 	CFLAGS += -ggdb -DDEBUG_BUILD
