@@ -180,7 +180,7 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 						       &DataSize);
 		else
 			Ignored = TRUE;
-	} else if (!StrCmp(Name, L"MokList") || !StrCmp(Name, L"MokListX")) {
+	} else if (!StrCmp(Name, L"MokListRT") || !StrCmp(Name, L"MokListXRT")) {
 		if (UefiSecureBootEnabled == TRUE &&
 		    MokSecureBootEnabled == TRUE)
 			Status = EfiVariableReadMok(Name, NULL,

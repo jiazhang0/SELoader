@@ -132,12 +132,12 @@ InitializePkcs7(VOID)
 	if (EFI_ERROR(Status))
 		return Status;
 
-	EFI_SIGNATURE_LIST *MokList = NULL;
-	UINTN MokListSize = 0;
+	EFI_SIGNATURE_LIST *MokListRT = NULL;
+	UINTN MokListRTSize = 0;
 
-	Status = EfiSecurityPolicyLoad(L"MokList", &MokList, &MokListSize);
+	Status = EfiSecurityPolicyLoad(L"MokListRT", &MokListRT, &MokListRTSize);
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
-		goto ErrorOnLoadMokList;
+		goto ErrorOnLoadMokListRT;
 
 	EFI_SIGNATURE_LIST *Dbx = NULL;
 	UINTN DbxSize = 0;
@@ -146,23 +146,23 @@ InitializePkcs7(VOID)
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
 		goto ErrorOnLoadDbx;
 
-	EFI_SIGNATURE_LIST *MokListX = NULL;
-	UINTN MokListXSize = 0;
+	EFI_SIGNATURE_LIST *MokListXRT = NULL;
+	UINTN MokListXRTSize = 0;
 
-	Status = EfiSecurityPolicyLoad(L"MokListX", &MokListX, &MokListXSize);
+	Status = EfiSecurityPolicyLoad(L"MokListXRT", &MokListXRT, &MokListXRTSize);
 	if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND)
-		goto ErrorOnLoadMokListX;
+		goto ErrorOnLoadMokListXRT;
 
-	Status = MergeSignatureList(&AllowedDb, Db, DbSize, MokList,
-				    MokListSize);
+	Status = MergeSignatureList(&AllowedDb, Db, DbSize, MokListRT,
+				    MokListRTSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to merge the allowed "
 				     L"database (err: 0x%x)\n");
 		goto ErrorMergeAllowedDb;
 	}
 
-	Status = MergeSignatureList(&RevokedDb, Dbx, DbxSize, MokListX,
-				    MokListXSize);
+	Status = MergeSignatureList(&RevokedDb, Dbx, DbxSize, MokListXRT,
+				    MokListXRTSize);
 	if (EFI_ERROR(Status)) {
 		EfiConsolePrintError(L"Failed to merge the revoked "
 				     L"database (err: 0x%x)\n");
@@ -179,15 +179,15 @@ ErrorMergeRevokedDb:
 	EfiMemoryFree(AllowedDb);
 
 ErrorMergeAllowedDb:
-	EfiMemoryFree(MokListX);
+	EfiMemoryFree(MokListXRT);
 
-ErrorOnLoadMokListX:
+ErrorOnLoadMokListXRT:
 	EfiMemoryFree(Dbx);
 
 ErrorOnLoadDbx:
-	EfiMemoryFree(MokList);
+	EfiMemoryFree(MokListRT);
 
-ErrorOnLoadMokList:
+ErrorOnLoadMokListRT:
 	EfiMemoryFree(Db);
 
 	return Status;
