@@ -32,6 +32,8 @@
 
 EFI_GUID gEfiMokVerifyProtocolGuid = EFI_MOK_VERIFY_PROTOCOL_GUID;
 
+STATIC EFI_MOK_VERIFY_PROTOCOL MokVerifyProtocolDuplicated;
+
 EFI_STATUS
 MokVerifyPeImage(VOID *Data, UINTN DataSize)
 {
@@ -41,9 +43,17 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
 				   (VOID **)&MokVerifyProtocol);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Failed to open MOK Verify Protocol "
-				     L"(err: 0x%x)\n", Status);
-		return Status;
+		EfiConsolePrintDebug(L"Attempting to call the duplicated MOK "
+				     L"Verify Protocol\n");
+
+		MokVerifyProtocol = &MokVerifyProtocolDuplicated;
+
+		if (!MokVerifyProtocolDuplicated.Verify) {
+			EfiConsolePrintError(L"Failed to find MOK Verify "
+					     L"Protocol (err: 0x%x)\n",
+					     Status);
+			return Status;
+		}
 	}
 
 	EfiConsolePrintLevel Level;
@@ -93,13 +103,21 @@ MokVerifyProtocolInstalled(BOOLEAN *Installed)
 	if (!Installed)
 		return EFI_INVALID_PARAMETER;
 
+	EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
 	EFI_STATUS Status;
 
-	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid, NULL);
+	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
+				   (VOID **)&MokVerifyProtocol);
 	if (EFI_ERROR(Status)) {
 		*Installed = FALSE;
 		return Status;
 	}
+
+	/*
+	 * Shim loader will unload the MOK Verify Protocol during
+	 * StartImage() for fallback.efi.
+	 */
+	MokVerifyProtocolDuplicated = *MokVerifyProtocol;
 
 	*Installed = TRUE;
 
