@@ -1,3 +1,12 @@
+Version 0.4.2
+=============
+Released: 2017-04-04
+
+- Duplicate MOK Verify Protocol in order to verify the PE image during
+  StartImage().
+- Use MokListRT and MokListXRT as the whitelist and blacklist used by
+  the EFI Pkcs7 Verify Protocol.
+
 Version 0.4.1
 =============
 Released: 2017-03-31
