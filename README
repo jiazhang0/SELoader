@@ -23,6 +23,73 @@ key is determined by the Secure Boot scheme you will use.
 Using UEFI Secure Boot, MOK Verify Protocol and the SELoader together, the
 boot process is completely trustworthy.
 
+ESP Layout
+----------
+A working layout on ESP looks like below, e.g,
+
+.
+├── EFI
+│   └── BOOT
+│       ├── bootx64.efi
+│       ├── grub.cfg
+│       ├── grub.cfg.p7b
+│       ├── grubx64.efi
+│       ├── Hash2DxeCrypto.efi
+│       ├── LockDown.efi
+│       ├── mmx64.efi
+│       ├── Pkcs7VerifyDxe.efi
+│       ├── SELoaderx64.efi
+│       └── x86_64-efi
+│           ├── ...
+│           ├── mok2verify.mod
+│           └── ...
+├── images
+│   ├── bzImage
+│   ├── bzImage.p7b
+│   ├── cube-builder-initramfs-intel-corei7-64.cpio.gz
+│   └── cube-builder-initramfs-intel-corei7-64.cpio.gz.p7b
+└── startup.nsh
+
+where:
+- bootx64.efi
+  The first stage shim loader, signed by DB key and authenticated by UEFI BIOS
+  boot manager.
+- SELoaderx64.efi
+  The second stage loader, authenticated by the shim loader with the vendor
+  certificate, shim certificate, MOK certificate or DB certificate.
+- grubx64.efi
+  The third stage loader, authenticated by the SELoader with the same objects
+  as mentioned in SELoaderx64.efi.
+- grub.cfg
+  grub configuration file.
+- grub.cfg.p7b
+  The signature file of grub.cfg, authenticated by the SELoader.
+- mok2verify.mod
+  Providing MOK2 Verify Protocol support, allowing the grub loader to call
+  SELoader to verify grub.cfg.p7b, bzImage.p7b and initrd.p7b.
+- bzImage
+  Linux kernel.
+- bzImage.p7b
+  The signature file of bzImage, authenticated by the SELoader.
+- initrd
+  initramfs image.
+- initrd.p7b
+  The signature file of initrd, authenticated by the SELoader.
+- LockDown.efi
+  Run the automatical certificate provision for UEFI Secure Boot.
+- mmx64.efi
+  MOK Secure Boot manager, authenticated by the shim loader.
+- Pkcs7VerifyDxe.efi
+  Providing EFI Pkcs7 Verify Protocol support, authenticated by the SELoader.
+- Hash2DxeCrypto.efi
+  Providing EFI Hash2 Protocol support, authenticated by the SELoader.
+- startup.nsh
+  UEFI shell bootstrap script.
+
+All efi binaries are signed with either DB.key or vendor_cert.key per the
+secure boot scheme you choose. Refer to meta-secure-env for practical secure
+boot implementation, and the signing tool sbsigntool.
+
 EFI Pkcs7 Verify Protocol
 -------------------------
 The SELoader employs EFI PKCS7 Verify Protocol available since UEFI
@@ -56,5 +123,8 @@ https://github.com/WindRiver-OpenSourceLabs/meta-secure-env
 shim - implement MOK verify protocol
 https://github.com/rhinstaller/shim
 
-edk2 - UEFI-related header files
+edk2 - provide Pkcs7VerifyDxe.efi driver
 https://github.com/tianocore/edk2
+
+sbsigntool - the signing tool for PE image
+git://kernel.ubuntu.com/jk/sbsigntool
