@@ -117,14 +117,14 @@ https://github.com/jiazhang0/libsign
 Mok2Verify patch for grub
 https://github.com/WindRiver-OpenSourceLabs/meta-secure-env/blob/pulsar-8/recipes-bsp/grub/grub-efi/mok2verify-support-to-verify-non-PE-file-with-PKCS-7.patch
 
+libedk2 - Be easy to build edk2 drivers
+https://github.com/jiazhang0/libedk2
+
 meta-secure-env - a practical secure boot implementation based on oe-core
 https://github.com/WindRiver-OpenSourceLabs/meta-secure-env
 
 shim - implement MOK verify protocol
 https://github.com/rhinstaller/shim
-
-edk2 - provide Pkcs7VerifyDxe.efi driver
-https://github.com/tianocore/edk2
 
 sbsigntool - the signing tool for PE image
 git://kernel.ubuntu.com/jk/sbsigntool
