@@ -25,7 +25,7 @@ boot process is completely trustworthy.
 
 ESP Layout
 ----------
-A working layout on ESP looks like below, e.g,
+A typical ESP layout for x86-64 looks like below, e.g,
 
 .
 ├── EFI
@@ -46,8 +46,8 @@ A working layout on ESP looks like below, e.g,
 ├── images
 │   ├── bzImage
 │   ├── bzImage.p7b
-│   ├── cube-builder-initramfs-intel-corei7-64.cpio.gz
-│   └── cube-builder-initramfs-intel-corei7-64.cpio.gz.p7b
+│   ├── initrd
+│   └── initrd.p7b
 └── startup.nsh
 
 where:
@@ -114,10 +114,10 @@ References
 libsign - the signing tool used to generate SELoader PKCS#7 signature
 https://github.com/jiazhang0/libsign
 
-Mok2Verify patch for grub
+grub - Mok2Verify patch for grub-efi
 https://github.com/WindRiver-OpenSourceLabs/meta-secure-env/blob/pulsar-8/recipes-bsp/grub/grub-efi/mok2verify-support-to-verify-non-PE-file-with-PKCS-7.patch
 
-libedk2 - Be easy to build edk2 drivers
+libedk2 - be easy to build edk2 drivers
 https://github.com/jiazhang0/libedk2
 
 meta-secure-env - a practical secure boot implementation based on oe-core
