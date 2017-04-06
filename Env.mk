@@ -14,6 +14,7 @@ EXTRA_CFLAGS ?=
 EXTRA_LDFLAGS ?=
 
 DEBUG_BUILD ?=
+TRACE_BUILD ?=
 
 LIB_DIR := $(TOPDIR)/Src/Efi/Lib
 # Installation location for SELoader.efi
