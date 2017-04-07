@@ -1,3 +1,4 @@
+- Detect whether the SELoader is loaded by shim
 - Support to transparently verify PE and non-PE file in MOK2 Verify Protocol
 - Support UEFI Secure Boot only mode
 - Implement the hook function for Security Architectural Protocol
