@@ -143,7 +143,7 @@ InitializeSecurityPolicy(VOID)
 					     L"Protocol\n");
 		}
 	} else
-		EfiConsolePrintInfo(L"Igore to install MOK2 Verify "
+		EfiConsolePrintInfo(L"Ignore to install MOK2 Verify "
 				    L"Protocol\n");
 
 	SecurityPolicyInitialized = TRUE;
