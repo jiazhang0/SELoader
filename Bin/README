@@ -13,12 +13,12 @@ Pre-built binary information
 ============================
 
 Upstream: git://github.com/tianocore/edk2.git
-Commit: e9429e7997b8e668126d71b8030cc3a96c36a652
+Commit: c137d95081690d4877fbeb5f1856972e84ac32f2
 Sha256sum:
  * Pkcs7VerifyDxe.efi
-   506a5605880278f17575729318468efb4c2d802e9cd2cafd7c4bd0dbdd201653
+   1c68dc892c887b7628b392f10b012e8f09177523333551379b1648ae81155681
  * Hash2DxeCrypto.efi
-   ec3a8fbcbe762beadde9281e7ec6660303b2ed10e4d0679f34d83be831200c72
+   5408631e8e45f4473f5ec928a55db1ca1b4d727b1187e90f942f13f68a03dc56
 
 Build instruction
 =================
