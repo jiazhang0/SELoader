@@ -4,10 +4,12 @@ and hash calculation used by SELoader.
 If your BIOS doesn't support PKCS7 Verify Protocol or any Hash Protocol, put
 these drivers to the location where the SELoader is located on ESP.
 
-Optionally, you can build the drivers from the scratch.
+In addition, a pre-built OVMF image is also provided for debugging.
 
-Eventually, if Secure Boot is enabled, you need to sign the drivers with the
-proper key in advance.
+Optionally, you can build the drivers and OVMF image from the scratch.
+
+If Secure Boot is enabled, you need to sign the drivers with the
+proper key with the signing tool sbsign in advance.
 
 Pre-built binary information
 ============================
@@ -19,6 +21,8 @@ Sha256sum:
    1c68dc892c887b7628b392f10b012e8f09177523333551379b1648ae81155681
  * Hash2DxeCrypto.efi
    5408631e8e45f4473f5ec928a55db1ca1b4d727b1187e90f942f13f68a03dc56
+ * OVMF.fd
+   2bb82dedacacec73cb25d13fde7ebdd46f6ffe3bb7ff64bbe715fb3415d44cab
 
 Build instruction
 =================
@@ -33,7 +37,7 @@ $ git clone git://github.com/tianocore/edk2.git
 $ cd edk2
 
 Next follow up the instructions found in
-CryptoPkg/Library/OpensslLib/Patch-HOWTO.txt
+CryptoPkg/Library/OpensslLib/Patch-HOWTO.txt or OpenSSL-HOWTO.txt
 
 $ make -C BaseTools/Source/C
 $ vim Conf/target.txt
@@ -43,9 +47,11 @@ TARGET_ARCH           = X64
 TOOL_CHAIN_TAG        = GCC5
 $ source edksetup.sh
 $ build -DSECURE_BOOT_ENABLE=TRUE -p SecurityPkg/SecurityPkg.dsc
+$ build -DSECURE_BOOT_ENABLE=TRUE -p OvmfPkg/OvmfPkgX64.dsc
 
-The generated binaries are then retrieved under
-Build/SecurityPkg/RELEASE_GCC5/X64/.
+The generated drivers are then retrieved from
+Build/SecurityPkg/RELEASE_GCC5/X64/ and the OVMF image is retrieved
+from Build/OvmfX64/RELEASE_GCC5/FV/OVMF.fd.
 
 Sign the drivers
 ================
@@ -55,3 +61,28 @@ you used to sign the drivers. For example,
 
 $ sbsign --cert <x509_cert> --key <private_key> Pkcs7VerifyDxe.efi
 $ sbsign --cert <x509_cert> --key <private_key> Hash2DxeCrypto.efi
+
+Run OVMF with KVM
+=================
+
+Here is an example of running OVMF image with KVM:
+kvm -drive file=$img,if=virtio -nographic -vnc :3 -m 2048 -netdev type=user,id=h1,hostfwd=tcp::4440-10.0.2.15:22 -device e1000,netdev=h1,mac=00:55:55:01:01:01,romfile= -bios OVMF.fd -pflash flash
+
+where:
+$img is the file path to the disk image.
+
+Note the flash file has already enrolled with the PK, KEK, DB and DBX in order
+to enable UEFI Secure Boot. These certificates and the corresponding keys
+are avaialble under Key/efi_sb_keys/.
+
+References
+==========
+
+libedk2 - be easy to build edk2 drivers
+https://github.com/jiazhang0/libedk2
+
+edk2 - edk2 upstream
+https://github.com/tianocore/edk2
+
+sbsigntool - the signing tool for PE image
+git://kernel.ubuntu.com/jk/sbsigntool
