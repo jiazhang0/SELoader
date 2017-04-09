@@ -3,19 +3,6 @@ include $(TOPDIR)/Rules.mk
 
 ARCH ?= $(shell $(CC) -dumpmachine | cut -f1 -d- | sed s,i[3456789]86,i386,)
 
-# XXX: __attribute__((ms_abi)) is only available since gcc 4.7
-CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
-	  -fno-merge-constants -fno-strict-aliasing \
-	  -ffreestanding -fshort-wchar \
-	  -fno-stack-protector -fno-stack-check \
-	  -fpic -fno-builtin -nostdinc \
-	  $(addprefix -I, $(TOPDIR)/Src/Efi/Include \
-			  $(TOPDIR)/Src/Efi/Include/Edk2 \
-			  $(shell $(CC) -print-file-name=include)) \
-	  -DEFIAPI=__attribute__\(\(ms_abi\)\) -DNO_MSABI_VA_FUNCS \
-	  -DGNU_EFI_VERSION=$(GNU_EFI_VERSION) -DCONFIG_$(ARCH) \
-	  -DGNU_EFI_USE_MS_ABI -DSEL_VERSION=L\"$(SEL_VERSION)\"
-
 ifeq ($(ARCH),x86_64)
     EFI_ARCH = x64
     CFLAGS += -m64 -mno-red-zone -DEFI_ARCH=\"$(EFI_ARCH)\" \
@@ -27,6 +14,22 @@ else ifeq ($(ARCH),i386)
 else
     $(error Unsupported ARCH $(ARCH) specified)
 endif
+
+SELOADER_CHAINLOADER ?= grub$(EFI_ARCH).efi
+
+# XXX: __attribute__((ms_abi)) is only available since gcc 4.7
+CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
+	  -fno-merge-constants -fno-strict-aliasing \
+	  -ffreestanding -fshort-wchar \
+	  -fno-stack-protector -fno-stack-check \
+	  -fpic -fno-builtin -nostdinc \
+	  $(addprefix -I, $(TOPDIR)/Src/Efi/Include \
+			  $(TOPDIR)/Src/Efi/Include/Edk2 \
+			  $(shell $(CC) -print-file-name=include)) \
+	  -DEFIAPI=__attribute__\(\(ms_abi\)\) -DNO_MSABI_VA_FUNCS \
+	  -DGNU_EFI_VERSION=$(GNU_EFI_VERSION) -DCONFIG_$(ARCH) \
+	  -DGNU_EFI_USE_MS_ABI -DSEL_VERSION=L\"$(SEL_VERSION)\" \
+	  -DSELOADER_CHAINLOADER=L\"$(SELOADER_CHAINLOADER)\"
 
 LD_SCRIPT = elf_$(ARCH)_efi.lds
 #LD_SCRIPT = ./efi_$(EFI_ARCH).lds
