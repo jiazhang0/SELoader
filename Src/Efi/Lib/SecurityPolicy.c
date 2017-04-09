@@ -173,7 +173,8 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 
 	Status = EFI_INVALID_PARAMETER;
 
-	if (!StrCmp(Name, L"db") || !StrCmp(Name, L"dbx")) {
+	if (!StrCmp(Name, EFI_IMAGE_SECURITY_DATABASE) ||
+	    !StrCmp(Name, EFI_IMAGE_SECURITY_DATABASE1)) {
 		if (UefiSecureBootEnabled == TRUE)
 			Status = EfiVariableReadSecure(Name, NULL,
 						       (VOID **)&Data,
