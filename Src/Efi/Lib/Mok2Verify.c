@@ -117,14 +117,7 @@ STATIC EFI_MOK2_VERIFY_PROTOCOL Mok2VerifyProtocol = {
 EFI_STATUS
 Mok2VerifyInitialize(VOID)
 {
-	UINT8 MokSBState = 1;
 	EFI_STATUS Status;
-
-	Status = MokSecureBootState(&MokSBState);
-        if (!EFI_ERROR(Status)) {
-		if (MokSBState == 1)
-        		return EFI_SUCCESS;
-        }
 
 	Status = EfiProtocolInstall(&Mok2VerifyHandle,
 				    &gEfiMok2VerifyProtocolGuid,
