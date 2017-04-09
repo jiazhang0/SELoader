@@ -49,7 +49,7 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 		MokVerifyProtocol = &MokVerifyProtocolDuplicated;
 
 		if (!MokVerifyProtocolDuplicated.Verify) {
-			EfiConsolePrintError(L"Failed to find MOK Verify "
+			EfiConsolePrintDebug(L"Failed to find MOK Verify "
 					     L"Protocol (err: 0x%x)\n",
 					     Status);
 			return Status;

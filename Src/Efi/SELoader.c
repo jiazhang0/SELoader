@@ -41,7 +41,7 @@ STATIC EFI_STATUS
 LoadConfig(VOID)
 {
 	EfiConsoleTraceDebug(L"Attempting to load SELoader configuration "
-			     SELOADER_CONFIGURATION);
+			     SELOADER_CONFIGURATION L" ...\n");
 
 	BOOLEAN ParseContent = FALSE;
 	EFI_STATUS Status;
@@ -61,7 +61,7 @@ LoadConfig(VOID)
 	 * behavior of SELoader.
 	 */
 
-	EfiConsoleTraceDebug(SELOADER_CONFIGURATION L" parsed (err: 0x%x)",
+	EfiConsoleTraceDebug(SELOADER_CONFIGURATION L" parsed (err: 0x%x)\n",
 			     Status);
 
 	return Status;
@@ -77,8 +77,8 @@ LoadConfig(VOID)
 STATIC EFI_STATUS
 LaunchLoader(VOID)
 {
-	EfiConsoleTraceDebug(L"Preparing to load " SELOADER_CHAINLOADER
-			     L" ...");
+	EfiConsoleTraceInfo(L"Preparing to load " SELOADER_CHAINLOADER
+			    L" ...\n");
 
 	EFI_STATUS Status;
 

@@ -90,8 +90,8 @@ LoadHash2DxeCrypto(VOID)
 STATIC EFI_STATUS
 InitializeHashService(VOID)
 {
-	EfiConsoleTraceDebug(L"Initializing EFI Hash Protocol "
-			     L"infrastructure ...");
+	EfiConsolePrintDebug(L"Initializing EFI Hash Protocol "
+			     L"infrastructure ...\n");
 
 	EFI_STATUS Status;
 
@@ -146,7 +146,7 @@ InitializeHashService(VOID)
 
 	HashServiceInitialized = TRUE;
 
-	EfiConsoleTraceDebug(L"Hash service initialized");
+	EfiConsoleTraceDebug(L"Hash service initialized\n");
 
 	return EFI_SUCCESS;
 }

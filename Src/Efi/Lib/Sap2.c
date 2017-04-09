@@ -43,22 +43,27 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 			   IN UINTN FileSize,
 			   IN BOOLEAN BootPolicy)
 {
-	EfiConsoleTraceDebug(L"The hooked FileAuthentication() provided "
-			     L"by Security2 Architectural Protocol called\n");
+	EfiConsoleTraceDebug(L"The FileAuthentication() hook called\n");
 
 	EFI_STATUS Status;
 
 	Status = MokVerifyPeImage(FileBuffer, FileSize);
-	if (!EFI_ERROR(Status))
+	if (!EFI_ERROR(Status)) {
+		EfiConsoleTraceDebug(L"The FileAuthentication() hook called\n");
 		return EFI_SUCCESS;
+	}
 
 	/* Chain original security policy */
 	Status = OriginalFileAuthentication(This, DevicePath, FileBuffer,
 					    FileSize, BootPolicy);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to verify PE image with DB\n");
+		EfiConsoleTraceError(L"Failed to verify PE image by the "
+				     L"original FileAuthentication()\n");
 		return Status;
 	}
+
+	EfiConsoleTraceDebug(L"Succeeded to call the FileAuthentication() "
+			     L"hook\n");
 
 	return EFI_SUCCESS;
 }

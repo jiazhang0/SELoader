@@ -366,7 +366,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 				     L"%s.p7a|.p7b|.p7s\n", Path);
 
 out:
-	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x",
+	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x\n",
 			    Path, Status);
 
 	return Status;

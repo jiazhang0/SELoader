@@ -94,7 +94,7 @@ MergeSignatureList(EFI_SIGNATURE_LIST ***Destination,
 STATIC EFI_STATUS
 InitializePkcs7(VOID)
 {
-	EfiConsoleTraceDebug(L"Initializing PKCS#7 infrastructure ...");
+	EfiConsolePrintDebug(L"Initializing PKCS#7 infrastructure ...\n");
 
 	EFI_STATUS Status;
 
@@ -171,7 +171,7 @@ InitializePkcs7(VOID)
 
 	Pkcs7Initialized = TRUE;
 
-	EfiConsolePrintInfo(L"PKCS#7 Verify Protocol loaded\n");
+	EfiConsoleTraceInfo(L"PKCS#7 Verify Protocol loaded\n");
 
 	return EFI_SUCCESS;
 

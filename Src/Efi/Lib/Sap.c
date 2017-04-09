@@ -39,8 +39,7 @@ ReplacedFileAuthenticationState(IN CONST EFI_SECURITY_ARCH_PROTOCOL *This,
 				IN UINT32 AuthenticationStatus,
 				IN CONST EFI_DEVICE_PATH_PROTOCOL *File)
 {
-	EfiConsoleTraceDebug(L"The hooked FileAuthenticationState() provided "
-			     L"by Security Architectural Protocol called\n");
+	EfiConsoleTraceDebug(L"The FileAuthenticationState() hook called\n");
 
 	return EFI_SUCCESS;
 }

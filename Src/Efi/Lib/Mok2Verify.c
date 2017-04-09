@@ -47,8 +47,8 @@ Mok2VerifySignature(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN VOID *Signature,
 	if (DataSize && !Data)
 		return EFI_INVALID_PARAMETER;
 
-	EfiConsoleTraceDebug(L"Attempting to verify signature by MOK2 Verify "
-			     L"Protocol ...");
+	EfiConsolePrintDebug(L"Attempting to verify signature by MOK2 Verify "
+			     L"Protocol ...\n");
 
 	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
 		EfiConsoleTraceDebug(L"Ignore to verify signature\n");
@@ -90,7 +90,7 @@ Mok2VerifyFile(IN EFI_MOK2_VERIFY_PROTOCOL *This, IN CONST CHAR16 *Path)
 		return EFI_INVALID_PARAMETER;
 
 	EfiConsoleTraceDebug(L"Attempting to verify file %s by MOK2 Verify "
-			     L"Protocol ...", Path);
+			     L"Protocol ...\n", Path);
 
 	VOID *Data = NULL;
 	UINTN DataSize = 0;
@@ -128,7 +128,7 @@ Mok2VerifyInitialize(VOID)
 		return Status;
         }
 
-	EfiConsolePrintDebug(L"MOK2 Verify Protocol installed\n");
+	EfiConsoleTraceDebug(L"MOK2 Verify Protocol installed\n");
 
         return EFI_SUCCESS;
 }

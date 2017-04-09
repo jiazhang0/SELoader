@@ -131,8 +131,8 @@ InitializeSecurityPolicy(VOID)
 	if (UefiSecureBootEnabled == TRUE &&
 	    (MokSecureBootProvisioned == FALSE ||
 	     MokSecureBootEnabled == TRUE)) {
-		EfiConsoleTraceDebug(L"Attempting to initialize MOK2 Verify "
-				     L"Protocol ...");
+		EfiConsolePrintDebug(L"Attempting to initialize MOK2 Verify "
+				     L"Protocol ...\n");
 
 		Status = Mok2VerifyInitialize();
 		if (EFI_ERROR(Status)) {
