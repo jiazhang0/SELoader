@@ -491,7 +491,11 @@ UnicodeSPrintAsciiFormat (
   ...
   );
 
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /**
+  [ATTENTION] This function is deprecated for security reason.
+
   Converts a decimal value to a Null-terminated Unicode string.
   
   Converts the decimal number specified by Value to a Null-terminated Unicode 
@@ -540,6 +544,8 @@ UnicodeValueToString (
   IN INT64       Value,
   IN UINTN       Width
   );
+
+#endif
 
 /**
   Converts a decimal value to a Null-terminated Unicode string.
@@ -882,7 +888,11 @@ AsciiSPrintUnicodeFormat (
   ...
   );
 
+#ifndef DISABLE_NEW_DEPRECATED_INTERFACES
+
 /**
+  [ATTENTION] This function is deprecated for security reason.
+
   Converts a decimal value to a Null-terminated ASCII string.
   
   Converts the decimal number specified by Value to a Null-terminated ASCII string 
@@ -931,6 +941,8 @@ AsciiValueToString (
   IN  UINTN      Width
   );
 
+#endif
+
 /**
   Converts a decimal value to a Null-terminated Ascii string.
 
@@ -955,8 +967,7 @@ AsciiValueToString (
   sign character, '0' characters, digit characters for Value, and the
   Null-terminator add up to Width characters.
 
-  If Buffer is not aligned on a 16-bit boundary, then ASSERT().
-  If an error would be returned, then the function will also ASSERT().
+  If an error would be returned, then the function will ASSERT().
 
   @param  Buffer      The pointer to the output buffer for the produced
                       Null-terminated Ascii string.
