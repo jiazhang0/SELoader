@@ -61,10 +61,14 @@ EfiConsolePrint(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 UINTN
 EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 {
+	if (!Format)
+		return 0;
+
 	VA_LIST Marker;
+	UINTN OutputLength;
 
 	VA_START(Marker, Format);
-	UINTN OutputLength = ConsolePrint(Level, Format, Marker);
+	OutputLength = ConsolePrint(Level, Format, Marker);
 	VA_END(Marker);
 
 	if (!OutputLength)
@@ -74,7 +78,7 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 	CHAR16 Typed;
 	CHAR16 *Prompt;
 
-	Prompt = L" >>|\r\n";
+	Prompt = L">>|\r\n";
 	Input(Prompt, &Typed, 1);
 #else
 	/* The trace prompt usually doesn't end with \n */

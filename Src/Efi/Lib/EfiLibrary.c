@@ -64,8 +64,8 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		return Status;
 
 #ifdef TRACE_BUILD
-	EfiConsoleTraceInfo(L"Traced on.\nPress any key to continue "
-			    L"when prompted with \">>|\" ...\n");
+	EfiConsoleTraceInfo(L"Traced on\nPress any key to continue "
+			    L"when prompted with \">>|\"\n");
 #endif
 
 	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
