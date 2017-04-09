@@ -90,6 +90,8 @@ All efi binaries are signed with either DB.key or vendor_cert.key per the
 secure boot scheme you choose. Refer to meta-secure-env for practical secure
 boot implementation, and the signing tool sbsigntool.
 
+Note that the SELoader can be also used alone without the shim loader.
+
 EFI Pkcs7 Verify Protocol
 -------------------------
 The SELoader employs EFI PKCS7 Verify Protocol available since UEFI
