@@ -122,11 +122,8 @@ Mok2VerifyInitialize(VOID)
 
 	Status = MokSecureBootState(&MokSBState);
         if (!EFI_ERROR(Status)) {
-		if (MokSBState == 1) {
-        		EfiConsolePrintDebug(L"Ignore to install MOK2 Verify "
-        				     L"Protocol\n");
+		if (MokSBState == 1)
         		return EFI_SUCCESS;
-		}	
         }
 
 	Status = EfiProtocolInstall(&Mok2VerifyHandle,
