@@ -66,14 +66,20 @@ Run OVMF with KVM
 =================
 
 Here is an example of running OVMF image with KVM:
-kvm -drive file=$img,if=virtio -nographic -vnc :3 -m 2048 -netdev type=user,id=h1,hostfwd=tcp::4440-10.0.2.15:22 -device e1000,netdev=h1,mac=00:55:55:01:01:01,romfile= -bios OVMF.fd -pflash flash
+sudo kvm \
+  -vnc :3 \
+  -m 1024 \
+  -netdev type=user,id=h1,hostfwd=tcp::4440-10.0.2.15:22 \
+  -device e1000,netdev=h1,mac=00:55:55:01:01:01,romfile= \
+  -bios Bin/OVMF.fd \
+  -drive format=raw,if=pflash,file=flash \
+  -drive format=raw,media=disk,cache=writeback,if=virtio,file=/dev/sdb
 
 where:
-$img is the file path to the disk image.
-
-Note the flash file has already enrolled with the PK, KEK, DB and DBX in order
+- the flash file has already enrolled with the PK, KEK, DB and DBX in order
 to enable UEFI Secure Boot. These certificates and the corresponding keys
 are avaialble under Key/efi_sb_keys/.
+- /dev/sdb is a disk drive.
 
 References
 ==========
