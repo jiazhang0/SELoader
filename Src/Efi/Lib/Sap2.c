@@ -62,8 +62,8 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 		return Status;
 	}
 
-	EfiConsoleTraceDebug(L"Succeeded to call the FileAuthentication() "
-			     L"hook\n");
+	EfiConsoleTraceDebug(L"Succeeded to call the original "
+			     L"FileAuthentication()\n");
 
 	return EFI_SUCCESS;
 }

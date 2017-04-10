@@ -91,7 +91,8 @@ InitializeSecurityPolicy(VOID)
 
 	Status = MokVerifyProtocolInstalled(&MokVerifyInstalled);
 	if (!EFI_ERROR(Status) && MokVerifyInstalled == TRUE)
-		EfiConsolePrintDebug(L"MOK Verify Protocol installed\n");
+		EfiConsolePrintDebug(L"MOK Verify Protocol is already "
+				     L"installed\n");
 
 	UINT8 MokSBState = 1;
 
