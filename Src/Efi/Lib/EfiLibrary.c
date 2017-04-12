@@ -39,6 +39,8 @@ EFI_HANDLE gThisImage;
 EFI_HANDLE gThisDevice;
 CHAR16 *gRootPath;
 
+extern CONST CHAR16 *GitCommit;
+
 EFI_STATUS
 EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -68,7 +70,8 @@ EfiLibraryInitialize(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			    L"when prompted with \">>|\"\n");
 #endif
 
-	EfiConsolePrintInfo(L"SELoader " SEL_VERSION " launched\n");
+	EfiConsolePrintInfo(L"SELoader " SEL_VERSION "+git%s launched\n",
+			    GitCommit);
 
 	EfiConsolePrintLevel Level;
 
