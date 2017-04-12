@@ -93,10 +93,35 @@ AppendFilePath(CONST CHAR16 *Path, CHAR16 **FilePath)
 	return EFI_SUCCESS;
 }
 
+STATIC VOID
+FixPath(CHAR16 *Path)
+{
+	UINTN Index = 0;
+
+	while (Path[Index]) {
+		if (Path[Index] == L'/')
+			Path[Index] = L'\\';
+
+		if (Path[Index + 1] == L'/')
+			Path[Index + 1] = L'\\';
+
+		if (Path[Index] != L'\\' || Path[Index + 1] != L'\\') {
+			++Index;
+			continue;
+		}
+
+		UINTN NextIndex = Index;
+
+		do
+			Path[NextIndex] = Path[NextIndex + 1];
+		while (Path[++NextIndex]);
+	}
+}
+
 EFI_STATUS
 EfiDevicePathRootDirectory(CHAR16 **DirectoryPath)
 {
-	if ( !DirectoryPath)
+	if (!DirectoryPath)
 		return EFI_INVALID_PARAMETER;
 
 	EFI_LOADED_IMAGE *LoadedImage;
@@ -109,6 +134,8 @@ EfiDevicePathRootDirectory(CHAR16 **DirectoryPath)
 	CHAR16 *LoaderFilePath = DevicePathToStr(LoadedImage->FilePath);
 	if (!LoaderFilePath)
 		return EFI_OUT_OF_RESOURCES;
+
+	FixPath(LoaderFilePath);
 
 	Status = DirectoryName(LoaderFilePath, DirectoryPath);
 	EfiMemoryFree(LoaderFilePath);
