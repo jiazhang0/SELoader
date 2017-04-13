@@ -362,12 +362,12 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			goto out;
 		}
 	} else
-		EfiConsolePrintError(L"Failed to load the signature file "
+		EfiConsolePrintDebug(L"Failed to load the signature file "
 				     L"%s.p7a|.p7b|.p7s\n", Path);
 
 out:
-	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x\n",
-			    Path, Status);
+	EfiConsoleTraceDebug(L"The file %s loaded with the exit code 0x%x\n",
+			     Path, Status);
 
 	return Status;
 }
