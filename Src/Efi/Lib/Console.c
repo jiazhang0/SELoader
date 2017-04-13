@@ -80,9 +80,6 @@ EfiConsoleTrace(EfiConsolePrintLevel Level, CHAR16 *Format, ...)
 
 	Prompt = L">>|\r\n";
 	Input(Prompt, &Typed, 1);
-#else
-	/* The trace prompt usually doesn't end with \n */
-	OutputLength += EfiConsolePrint(Level, L"\n");
 #endif
 
 	return OutputLength;
