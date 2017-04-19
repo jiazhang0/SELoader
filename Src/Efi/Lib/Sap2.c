@@ -44,13 +44,25 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 {
 	EfiConsoleTraceDebug(L"The FileAuthentication() hook called\n");
 
+	BOOLEAN Installed;
 	EFI_STATUS Status;
 
-	Status = MokVerifyPeImage(FileBuffer, FileSize);
-	if (!EFI_ERROR(Status)) {
-		EfiConsoleTraceDebug(L"The FileAuthentication() hook called\n");
-		return EFI_SUCCESS;
+	Status = MokVerifyProtocolInstalled(&Installed);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	if (Installed == TRUE) {
+		Status = MokVerifyPeImage(FileBuffer, FileSize);
+		if (!EFI_ERROR(Status)) {
+			EfiConsoleTraceDebug(L"Succeeded to verify PE image "
+					     L"by the FileAuthentication() "
+					     L"hook\n");
+			return EFI_SUCCESS;
+		}
 	}
+
+	EfiConsolePrintDebug(L"Falling back to the original "
+			     L"FileAuthentication() ...\n");
 
 	/* Chain original security policy */
 	Status = OriginalFileAuthentication(This, DevicePath, FileBuffer,
@@ -61,7 +73,7 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 		return Status;
 	}
 
-	EfiConsoleTraceDebug(L"Succeeded to call the original "
+	EfiConsoleTraceDebug(L"Succeeded to verify PE image by the original "
 			     L"FileAuthentication()\n");
 
 	return EFI_SUCCESS;

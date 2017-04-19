@@ -56,6 +56,9 @@ EFI_STATUS
 MokVerifyProtocolInstalled(BOOLEAN *Installed);
 
 EFI_STATUS
+MokVerifyProtocolHook(VOID);
+
+EFI_STATUS
 Mok2VerifyInitialize(VOID);
 
 EFI_STATUS

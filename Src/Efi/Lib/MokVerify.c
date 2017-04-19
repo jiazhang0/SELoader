@@ -48,8 +48,8 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 
 		MokVerifyProtocol = &MokVerifyProtocolDuplicated;
 
-		if (!MokVerifyProtocolDuplicated.Verify) {
-			EfiConsolePrintDebug(L"Failed to find MOK Verify "
+		if (!MokVerifyProtocol->Verify) {
+			EfiConsolePrintDebug(L"Unable to find MOK Verify "
 					     L"Protocol (err: 0x%x)\n",
 					     Status);
 			return Status;
@@ -89,12 +89,34 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 
 	Status = MokVerifyProtocol->Verify(Data, DataSize);
 	if (!EFI_ERROR(Status))
-		EfiConsoleTraceDebug(L"Succeeded to verify PE image\n");
+		EfiConsolePrintDebug(L"Succeeded to verify PE image\n");
 	else
-		EfiConsoleTraceError(L"Failed to verify PE image "
+		EfiConsolePrintError(L"Failed to verify PE image "
 				     L"(err: 0x%x)\n", Status);
 
 	return Status;
+}
+
+EFI_STATUS
+MokVerifyProtocolHook(VOID)
+{
+	EFI_MOK_VERIFY_PROTOCOL *MokVerifyProtocol;
+	EFI_STATUS Status;
+
+	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
+				   (VOID **)&MokVerifyProtocol);
+	if (EFI_ERROR(Status))
+		return Status;
+
+	/*
+	 * Shim loader will unload the MOK Verify Protocol during
+	 * StartImage() for fallback.efi.
+	 */
+	MokVerifyProtocolDuplicated = *MokVerifyProtocol;
+
+	EfiConsolePrintDebug(L"Succeeded to hook MOK Verify Protocol\n");
+
+	return EFI_SUCCESS;
 }
 
 EFI_STATUS
@@ -108,16 +130,14 @@ MokVerifyProtocolInstalled(BOOLEAN *Installed)
 
 	Status = EfiProtocolLocate(&gEfiMokVerifyProtocolGuid,
 				   (VOID **)&MokVerifyProtocol);
-	if (EFI_ERROR(Status)) {
+	if (EFI_ERROR(Status) && !MokVerifyProtocolDuplicated.Verify) {
 		*Installed = FALSE;
+
+		if (Status == EFI_NOT_FOUND)
+			Status = EFI_SUCCESS;
+
 		return Status;
 	}
-
-	/*
-	 * Shim loader will unload the MOK Verify Protocol during
-	 * StartImage() for fallback.efi.
-	 */
-	MokVerifyProtocolDuplicated = *MokVerifyProtocol;
 
 	*Installed = TRUE;
 
