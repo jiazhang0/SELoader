@@ -31,7 +31,6 @@
 
 EFI_GUID gEfiSecurityArchProtocolGuid = EFI_SECURITY_ARCH_PROTOCOL_GUID;
 
-STATIC EFI_SECURITY_ARCH_PROTOCOL *SecurityArchProtocol;
 STATIC EFI_SECURITY_FILE_AUTHENTICATION_STATE OriginalFileAuthenticationState;
 
 EFI_STATUS EFIAPI
@@ -45,32 +44,32 @@ ReplacedFileAuthenticationState(IN CONST EFI_SECURITY_ARCH_PROTOCOL *This,
 }
 
 EFI_STATUS
-HookSap(VOID)
+SapHook(VOID)
 {
+	EFI_SECURITY_ARCH_PROTOCOL *Sap;
 	EFI_STATUS Status;
 
 	/* Security Architectural Protocol should be always available */
 	Status = EfiProtocolLocate(&gEfiSecurityArchProtocolGuid,
-				   (VOID **)&SecurityArchProtocol);
+				   (VOID **)&Sap);
 	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Failed to open Security Architectural "
-				     L"Protocol\n");
+		EfiConsolePrintError(L"Failed to open EFI Security "
+				     L"Architectural Protocol\n");
 		return Status;
 	}
 
-	OriginalFileAuthenticationState = SecurityArchProtocol->FileAuthenticationState;
-	SecurityArchProtocol->FileAuthenticationState = ReplacedFileAuthenticationState;
+	OriginalFileAuthenticationState = Sap->FileAuthenticationState;
+	Sap->FileAuthenticationState = ReplacedFileAuthenticationState;
 
 	/* Check to see whether the interface is in write protected memory */
-	if (SecurityArchProtocol->FileAuthenticationState !=
-	    ReplacedFileAuthenticationState) {
+	if (Sap->FileAuthenticationState != ReplacedFileAuthenticationState) {
 		OriginalFileAuthenticationState = NULL;
-		EfiConsolePrintError(L"Unable to hook Security Architectural "
-				     L"Protocol\n");
+		EfiConsolePrintError(L"Unable to hook EFI Security "
+				     L"Architectural Protocol\n");
 		return EFI_ACCESS_DENIED;
 	}
 
-	EfiConsolePrintDebug(L"Succeeded to hook Security Architectural "
+	EfiConsolePrintDebug(L"Succeeded to hook EFI Security Architectural "
 			     L"Protocol\n");
 
 	return EFI_SUCCESS;

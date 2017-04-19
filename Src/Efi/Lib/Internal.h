@@ -62,10 +62,10 @@ EFI_STATUS
 MokVerifyPeImage(VOID *Data, UINTN DataSize);
 
 EFI_STATUS
-HookSap(VOID);
+SapHook(VOID);
 
 EFI_STATUS
-HookSap2(VOID);
+Sap2Hook(VOID);
 
 VOID
 SecurityPolicyInitialize(VOID);

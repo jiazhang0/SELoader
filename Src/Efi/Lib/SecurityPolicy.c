@@ -118,8 +118,8 @@ InitializeSecurityPolicy(VOID)
 	if (UefiSecureBootProvisioned == TRUE && SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
 
-		HookSap();
-		HookSap2();
+		SapHook();
+		Sap2Hook();
 
 		if (MokSecureBootProvisioned == TRUE && MokSBState == 0)
 			MokSecureBootEnabled = TRUE;

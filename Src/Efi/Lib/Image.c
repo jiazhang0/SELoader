@@ -101,7 +101,7 @@ ExecuteImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 
 	Status = gBS->StartImage(ImageHandle, NULL, NULL);
 	if (!EFI_ERROR(Status))
-		EfiConsolePrintDebug(L"Image %s exited\n", Path);
+		EfiConsolePrintDebug(L"The image %s exited\n", Path);
 	else
 		EfiConsolePrintError(L"Failed to start the image "
 				     L"%s (err: 0x%x)\n", Path, Status);
