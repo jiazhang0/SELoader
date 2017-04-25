@@ -42,7 +42,13 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 			   IN UINTN FileSize,
 			   IN BOOLEAN BootPolicy)
 {
-	EfiConsoleTraceDebug(L"The FileAuthentication() hook called\n");
+	CHAR16 *FilePath = DevicePathToStr((EFI_DEVICE_PATH *)DevicePath);
+
+	if (!FilePath)
+		return EFI_OUT_OF_RESOURCES;
+
+	EfiConsoleTraceDebug(L"The FileAuthentication() hook called for "
+			     L"authenticating %s\n", FilePath);
 
 	BOOLEAN Installed;
 	EFI_STATUS Status;
@@ -68,13 +74,14 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 	Status = OriginalFileAuthentication(This, DevicePath, FileBuffer,
 					    FileSize, BootPolicy);
 	if (EFI_ERROR(Status)) {
-		EfiConsoleTraceError(L"Failed to verify PE image by the "
-				     L"original FileAuthentication()\n");
+		EfiConsoleTraceError(L"Failed to verify PE image %s by the "
+				     L"original FileAuthentication()\n",
+				     FilePath);
 		return Status;
 	}
 
-	EfiConsoleTraceDebug(L"Succeeded to verify PE image by the original "
-			     L"FileAuthentication()\n");
+	EfiConsoleTraceDebug(L"Succeeded to verify PE image %s by the "
+			     L"original FileAuthentication()\n", FilePath);
 
 	return EFI_SUCCESS;
 }

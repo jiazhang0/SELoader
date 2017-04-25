@@ -31,6 +31,8 @@
 
 #include <Efi.h>
 
+typedef EFI_DEVICE_PATH_PROTOCOL	EFI_DEVICE_PATH;
+
 VOID
 InitializeLib(
 	IN EFI_HANDLE ImageHandle,
