@@ -91,7 +91,7 @@ MokVerifyPeImage(VOID *Data, UINTN DataSize)
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"Succeeded to verify PE image\n");
 	else
-		EfiConsolePrintError(L"Failed to verify PE image "
+		EfiConsolePrintDebug(L"Failed to verify PE image "
 				     L"(err: 0x%x)\n", Status);
 
 	return Status;
