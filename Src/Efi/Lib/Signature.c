@@ -345,7 +345,7 @@ EfiSignatureVerifyAttached(VOID *Signature, UINTN SignatureSize,
 	if (EFI_ERROR(Status))
 		return Status;
 
-	EfiConsolePrintInfo(L"Succeeded to verify the attached signature\n");
+	EfiConsolePrintDebug(L"Succeeded to verify the attached signature\n");
 
 	return EFI_SUCCESS;
 }
