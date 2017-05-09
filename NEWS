@@ -1,3 +1,12 @@
+Version 0.4.5
+=============
+Released: 2017-05-09
+
+- Improve the messages printed during the boot.
+- Fix build failures for ia32.
+- Fix invalid path delimiter in loaded image's path when launched from
+  UEFI shell.
+
 Version 0.4.4
 =============
 Released: 2017-04-10
