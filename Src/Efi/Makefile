@@ -7,15 +7,20 @@ ifeq ($(ARCH),x86_64)
     EFI_ARCH = x64
     CFLAGS += -m64 -mno-red-zone -DEFI_ARCH=\"$(EFI_ARCH)\" \
               -I$(TOPDIR)/Src/Efi/Include/Edk2/X64
+    GNU_EFI_ARCH = $(ARCH)
 else ifeq ($(ARCH),i386)
     EFI_ARCH = ia32
     CFLAGS += -m32 -DEFI_ARCH=\"$(EFI_ARCH)\" \
               -I$(TOPDIR)/Src/Efi/Include/Edk2/Ia32
+    GNU_EFI_ARCH = $(EFI_ARCH)
 else
     $(error Unsupported ARCH $(ARCH) specified)
 endif
 
 SELOADER_CHAINLOADER ?= grub$(EFI_ARCH).efi
+
+EFI_LD_SCRIPT = elf_$(GNU_EFI_ARCH)_efi.lds
+EFI_CRT0 = crt0-efi-$(GNU_EFI_ARCH).o
 
 # XXX: __attribute__((ms_abi)) is only available since gcc 4.7
 CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
@@ -31,10 +36,8 @@ CFLAGS += -mno-mmx -mno-sse -maccumulate-outgoing-args \
 	  -DGNU_EFI_USE_MS_ABI -DSEL_VERSION=L\"$(SEL_VERSION)\" \
 	  -DSELOADER_CHAINLOADER=L\"$(SELOADER_CHAINLOADER)\"
 
-LD_SCRIPT = elf_$(ARCH)_efi.lds
-#LD_SCRIPT = ./efi_$(EFI_ARCH).lds
 LDFLAGS += -nostdlib -shared -Bsymbolic -L$(gnuefi_libdir) \
-	   -T $(LD_SCRIPT) $(gnuefi_libdir)/crt0-efi-$(ARCH).o \
+	   -T $(EFI_LD_SCRIPT) $(gnuefi_libdir)/$(EFI_CRT0) \
 	   $(EXTRA_LDFLAGS)
 
 export CC AR CFLAGS LDFLAGS
