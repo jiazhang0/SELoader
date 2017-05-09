@@ -9,7 +9,7 @@ ifeq ($(ARCH),x86_64)
               -I$(TOPDIR)/Src/Efi/Include/Edk2/X64
 else ifeq ($(ARCH),i386)
     EFI_ARCH = ia32
-    CFLAGS += -m32 -DEFI_ARCH=\"$(EFI_ARCH)\"
+    CFLAGS += -m32 -DEFI_ARCH=\"$(EFI_ARCH)\" \
               -I$(TOPDIR)/Src/Efi/Include/Edk2/Ia32
 else
     $(error Unsupported ARCH $(ARCH) specified)
