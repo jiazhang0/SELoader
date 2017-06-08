@@ -213,7 +213,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	if (!Path)
 		return EFI_INVALID_PARAMETER;
 
-	EFI_STATUS Status;
+	EFI_STATUS Status, RealStatus;
 
 	Status = EfiLibraryVectorizedBufferEnter(Data, DataSize);
 	if (EFI_ERROR(Status))
@@ -246,6 +246,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 	UINTN SignatureSize = 0;
 
 	Status = LoadFile(Path, L".p7a", &Signature, &SignatureSize);
+	RealStatus = Status;
 	if (!EFI_ERROR(Status)) {
 		BOOLEAN SaveContentRequired = TRUE;
 
@@ -333,6 +334,11 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 			goto out;
 		}
+	} else {
+		if (Status == EFI_NOT_FOUND)
+			Status = RealStatus;
+		else
+			RealStatus = Status;
 	}
 
 	EfiConsolePrintDebug(L"Attempting to load the detached signature "
@@ -366,9 +372,15 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 
 			goto out;
 		}
-	} else
+	} else {
+		if (Status == EFI_NOT_FOUND)
+			Status = RealStatus;
+		else
+			RealStatus = Status;
+
 		EfiConsolePrintDebug(L"Failed to load the signature file "
 				     L"%s.p7a|.p7b|.p7s\n", Path);
+	}
 
 out:
 	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x\n",
