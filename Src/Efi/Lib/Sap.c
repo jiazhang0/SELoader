@@ -45,6 +45,11 @@ ReplacedFileAuthenticationState(IN CONST EFI_SECURITY_ARCH_PROTOCOL *This,
 {
 	EfiConsoleTraceDebug(L"The FileAuthenticationState() hook called\n");
 
+	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
+		EfiConsoleTraceDebug(L"Ignore to verify signature\n");
+		return EFI_SUCCESS;
+	}
+
 	return EFI_SUCCESS;
 }
 

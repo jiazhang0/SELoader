@@ -55,6 +55,11 @@ ReplacedFileAuthentication(IN CONST EFI_SECURITY2_ARCH_PROTOCOL *This,
 	EfiConsoleTraceDebug(L"The FileAuthentication() hook called for "
 			     L"authenticating %s\n", FilePath);
 
+	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
+		EfiConsoleTraceDebug(L"Ignore to verify signature\n");
+		return EFI_SUCCESS;
+	}
+
 	BOOLEAN Installed;
 	EFI_STATUS Status;
 

@@ -44,6 +44,7 @@ STATIC BOOLEAN UefiSecureBootProvisioned = FALSE;
 STATIC BOOLEAN UefiSecureBootEnabled = FALSE;
 STATIC BOOLEAN MokSecureBootProvisioned = FALSE;
 STATIC BOOLEAN MokSecureBootEnabled = FALSE;
+STATIC BOOLEAN MokSBDisabledExplicitly = FALSE;
 
 STATIC VOID
 PrintSecurityPolicy(VOID)
@@ -104,13 +105,21 @@ InitializeSecurityPolicy(VOID)
 			MokVerifyInstalled = FALSE;
 	}
 
+	/* Note 1 denotes MOK Secure Boot is disabled */
 	UINT8 MokSBState = 1;
 
 	Status = MokSecureBootState(&MokSBState);
-	if (!EFI_ERROR(Status))
+	if (!EFI_ERROR(Status)) {
 		EfiConsolePrintDebug(L"Shim loader is %soperating in "
 				     L"MOK Secure Boot mode\n", !MokSBState ?
 								L"" : L"not ");
+		/*
+		 * We need to distinguish the explicit disablement from
+		 * direct loading without shim.
+		 */
+		if (MokSBState == 1)
+			MokSBDisabledExplicitly = TRUE;
+	}
 
 	if (MokVerifyInstalled == FALSE && MokSBState == 0) {
 		EfiConsolePrintError(L"Shim loader is in MOK Secure Boot mode "
@@ -125,23 +134,32 @@ InitializeSecurityPolicy(VOID)
 	if (MokVerifyInstalled == TRUE)
 		MokSecureBootProvisioned = TRUE;
 
+	BOOLEAN InstallMokVerify = FALSE;
+
 	if (UefiSecureBootProvisioned == TRUE && SecureBoot == 1) {
 		UefiSecureBootEnabled = TRUE;
 
 		SapHook();
 		Sap2Hook();
 
-		if (MokSecureBootProvisioned == TRUE && MokSBState == 0)
+		if (MokSecureBootProvisioned == TRUE && MokSBState == 0) {
 			MokSecureBootEnabled = TRUE;
+			InstallMokVerify = TRUE;
+		} else if (MokSBDisabledExplicitly == TRUE) {
+			/*
+			 * Shim parser loads SELoader without authentication.
+			 * And SELoader will approve all loading requests
+			 * without involving UEFI Secure Boot.
+			 */
+			InstallMokVerify = TRUE;
+		}
 	}
 
 	/*
 	 * Install MOK2 Verify Protocol as long as UEFI/MOK Secure Boot already
 	 * enabled.
 	 */
-	if (UefiSecureBootEnabled == TRUE &&
-	    (MokSecureBootProvisioned == FALSE ||
-	     MokSecureBootEnabled == TRUE)) {
+	if (InstallMokVerify == TRUE) {
 		EfiConsolePrintDebug(L"Attempting to initialize MOK2 Verify "
 				     L"Protocol ...\n");
 
@@ -259,7 +277,7 @@ EfiSecurityPolicySecureBootEnabled(VOID)
 		if (MokSecureBootProvisioned == TRUE) {
 			if (MokSecureBootEnabled == TRUE)
 				Result = TRUE;
-		} else
+		} else if (MokSBDisabledExplicitly == FALSE)
 			Result = TRUE;
 	}
 
