@@ -15,14 +15,14 @@ Pre-built binary information
 ============================
 
 Upstream: git://github.com/tianocore/edk2.git
-Commit: c137d95081690d4877fbeb5f1856972e84ac32f2
+Commit: b1fe2029fa2f473922fb830a2e33c5ae0c0ae20d
 Sha256sum:
  * Pkcs7VerifyDxe.efi
-   1c68dc892c887b7628b392f10b012e8f09177523333551379b1648ae81155681
+   ccd3fad4f7e700127a7095f7715e0e91505441472839ce0198e6234dfa0144dc
  * Hash2DxeCrypto.efi
-   5408631e8e45f4473f5ec928a55db1ca1b4d727b1187e90f942f13f68a03dc56
+   f7b9374b7159ce821a648656dd81eaed66ea298f2abcd244c067a477a534d057
  * OVMF.fd
-   2bb82dedacacec73cb25d13fde7ebdd46f6ffe3bb7ff64bbe715fb3415d44cab
+   8113800bdf08fd15ed613a6debc6e3493ffdfc0325a75340e19e3718a25b475b
 
 Build instruction
 =================
