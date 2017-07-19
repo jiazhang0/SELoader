@@ -69,8 +69,10 @@ Mok2VerifyInitialize(VOID);
 EFI_STATUS
 MokVerifyPeImage(VOID *Data, UINTN DataSize);
 
+#ifdef EXPERIMENTAL_BUILD
 EFI_STATUS
 SapHook(VOID);
+#endif
 
 EFI_STATUS
 Sap2Hook(VOID);

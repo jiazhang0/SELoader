@@ -41,7 +41,7 @@
 #  define SELOADER_CHAINLOADER			L"grub" EFI_ARCH L".efi"
 #endif
 
-#if 0
+#ifdef EXPERIMENTAL_BUILD
 STATIC EFI_STATUS
 LoadConfig(VOID)
 {

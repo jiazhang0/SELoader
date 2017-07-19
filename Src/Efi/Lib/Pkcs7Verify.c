@@ -213,25 +213,25 @@ Pkcs7VerifyDetachedSignature(VOID *Hash, UINTN HashSize,
 			return Status;
 	}
 
+#ifdef EXPERIMENTAL_BUILD
 	/*
 	 * NOTE: Current EDKII-OpenSSL interface cannot support VerifySignature
 	 * directly. EFI_UNSUPPORTED is always returned.
 	 */
-#if 0
 	Status = Pkcs7VerifyProtocol->VerifySignature(Pkcs7VerifyProtocol,
 						      Signature,
 						      SignatureSize,
-						      Data, DataSize,
+						      Hash, HashSize,
 						      AllowedDb,
 						      RevokedDb,
 						      TimeStampDb);
-#endif
-
+#else
 	EFI_PKCS7_VERIFY_BUFFER Verify = Pkcs7VerifyProtocol->VerifyBuffer;
 
 	Status = Verify(Pkcs7VerifyProtocol, Signature, SignatureSize,
 			Hash, HashSize, AllowedDb, RevokedDb, TimeStampDb,
 			NULL, NULL);
+#endif
 	if (!EFI_ERROR(Status))
 		EfiConsolePrintDebug(L"Succeeded to verify detached PKCS#7 "
 				     L"signature\n");

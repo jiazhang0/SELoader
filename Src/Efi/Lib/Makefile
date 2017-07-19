@@ -19,9 +19,12 @@ OBJS_$(LIB_NAME) := \
 	UefiSecureBoot.o \
 	MokVerify.o \
 	Mok2Verify.o \
-	Sap.o \
 	Sap2.o \
 	EfiLibrary.o
+
+ifeq ($(EXPERIMENTAL_BUILD),true)
+	OBJS_$(LIB_NAME) += Sap.o
+endif
 
 LIBS_$(LIB_NAME) := \
 	BaseLibrary/libBaseLibrary.a

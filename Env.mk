@@ -46,3 +46,7 @@ endif
 ifneq ($(TRACE_BUILD),)
 	CFLAGS += -DTRACE_BUILD
 endif
+
+ifneq ($(EXPERIMENTAL_BUILD),)
+	CFLAGS += -DEXPERIMENTAL_BUILD
+endif

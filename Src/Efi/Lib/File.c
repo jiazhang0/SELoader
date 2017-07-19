@@ -193,8 +193,11 @@ STATIC BOOLEAN
 LoadSignatureRequired(CONST CHAR16 *Path)
 {
 	if (StrEndsWith(Path, L".p7a") == TRUE ||
-	    StrEndsWith(Path, L".p7b") == TRUE ||
-	    StrEndsWith(Path, L".p7s") == TRUE)
+	    StrEndsWith(Path, L".p7b") == TRUE
+#ifdef EXPERIMENTAL_BUILD
+	    || StrEndsWith(Path, L".p7s") == TRUE
+#endif
+	   )
 		return FALSE;
 
 	if (EfiSecurityPolicySecureBootEnabled() == FALSE) {
@@ -341,6 +344,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 			RealStatus = Status;
 	}
 
+#ifdef EXPERIMENTAL_BUILD
 	EfiConsolePrintDebug(L"Attempting to load the detached signature "
 			     L"file %s.p7s ...\n", Path);
 
@@ -381,6 +385,10 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		EfiConsolePrintDebug(L"Failed to load the signature file "
 				     L"%s.p7a|.p7b|.p7s\n", Path);
 	}
+#else
+	EfiConsolePrintDebug(L"Failed to load the signature file "
+			     L"%s.p7a|.p7b\n", Path);
+#endif
 
 out:
 	EfiConsoleTraceInfo(L"The file %s loaded with the exit code 0x%x\n",
