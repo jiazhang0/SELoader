@@ -117,10 +117,13 @@ libsign - the signing tool used to generate SELoader PKCS#7 signature
 https://github.com/jiazhang0/libsign
 
 grub - Mok2Verify patch to verify the grub.cfg, linux kernel and initrd
-https://github.com/WindRiver-OpenSourceLabs/meta-secure-env/blob/pulsar-8/recipes-bsp/grub/grub-efi/mok2verify-support-to-verify-non-PE-file-with-PKCS-7.patch
-
-meta-secure-env - a practical secure boot implementation based on oe-core
-https://github.com/WindRiver-OpenSourceLabs/meta-secure-env
+https://github.com/jiazhang0/meta-secure-core/blob/master/meta-efi-secure-boot/recipes-bsp/grub/grub-efi/mok2verify-support-to-verify-non-PE-file-with-PKCS-7.patch
 
 shim - implement MOK verify protocol
-https://github.com/rhinstaller/shim
+https://github.com/rhboot/shim
+
+meta-secure-core - a practical secure boot implementation based on oe-core
+https://github.com/jiazhang0/meta-secure-core
+
+SecureCore - a complete OpenEmbedded/Poky-compatible reference implementation based on meta-secure-core
+https://github.com/jiazhang0/SecureCore
