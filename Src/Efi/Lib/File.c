@@ -236,7 +236,7 @@ EfiFileLoad(CONST CHAR16 *Path, VOID **Data, UINTN *DataSize)
 		if (!EFI_ERROR(Status) || Status != EFI_NOT_FOUND)
 			goto out;
 
-		EfiConsolePrintDebug(L"Not found the file %s", Path);
+		EfiConsolePrintDebug(L"Not found the file %s\n", Path);
 	}
 
 	EfiConsolePrintDebug(L"Attempting to load the content-attached "
