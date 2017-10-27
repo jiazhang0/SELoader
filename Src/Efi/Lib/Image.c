@@ -71,6 +71,17 @@ LoadImage(CONST CHAR16 *Path, VOID *ImageBuffer, UINTN ImageBufferSize,
 		return Status;
 	}	
 
+	/*
+	 * shim may re-install the Sap/Sap2 hooks. If so, we hook them
+	 * before calling BS->LoadImage.
+	 */
+        if (EfiSecurityPolicyMokVerifyProtocolInstalled() == TRUE) {
+#ifdef EXPERIMENTAL_BUILD
+		SapHook();
+#endif
+		Sap2Hook();
+	}
+
 	EFI_HANDLE LoadedImageHandle;
 
         Status = gBS->LoadImage(FALSE, gThisImage, DevicePath, ImageBuffer,

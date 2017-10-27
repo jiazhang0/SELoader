@@ -281,6 +281,16 @@ EfiSecurityPolicySecureBootEnabled(VOID)
 		(MokSecureBootUnavailable == TRUE));
 }
 
+BOOLEAN
+EfiSecurityPolicyMokVerifyProtocolInstalled(VOID)
+{
+	if (SecurityPolicyInitialized == FALSE)
+		InitializeSecurityPolicy();
+
+	return EfiSecurityPolicySecureBootEnabled() == TRUE &&
+	       MokSecureBootProvisioned == TRUE;
+}
+
 VOID
 SecurityPolicyInitialize(VOID)
 {
