@@ -44,7 +44,7 @@ STATIC BOOLEAN UefiSecureBootProvisioned = FALSE;
 STATIC BOOLEAN UefiSecureBootEnabled = FALSE;
 STATIC BOOLEAN MokSecureBootProvisioned = FALSE;
 STATIC BOOLEAN MokSecureBootEnabled = FALSE;
-STATIC BOOLEAN MokSBDisabledExplicitly = FALSE;
+STATIC BOOLEAN MokSecureBootUnavailable = FALSE;
 
 STATIC VOID
 PrintSecurityPolicy(VOID)
@@ -53,19 +53,15 @@ PrintSecurityPolicy(VOID)
 			    UefiSecureBootEnabled ? L"Enabled" :
 						    L"Disabled");
 
-	if (UefiSecureBootEnabled == FALSE)
-		EfiConsolePrintInfo(L"Setup Mode: %s\n",
-				    UefiSecureBootProvisioned ? L"No" :
-								L"Yes");
+	EfiConsolePrintInfo(L"Setup Mode: %s\n",
+			    UefiSecureBootProvisioned ? L"No" : L"Yes");
+
+	EfiConsolePrintInfo(L"MOK Verify Protocol installed: %s\n",
+			    MokSecureBootProvisioned ? L"Yes" : L"No");
 
 	EfiConsolePrintInfo(L"MOK Secure Boot Mode: %s\n",
 			    MokSecureBootEnabled ? L"Enabled" :
 						   L"Disabled");
-
-	if (MokSecureBootEnabled == FALSE)
-		EfiConsolePrintInfo(L"MOK Verify Protocol installed: %s\n",
-				    MokSecureBootProvisioned ? L"Yes" :
-							       L"No");
 }
 
 STATIC VOID
@@ -79,6 +75,9 @@ InitializeSecurityPolicy(VOID)
 		EfiConsolePrintDebug(L"Platform firmware is in %s mode\n",
 				     SetupMode == 1 ? L"Setup" : L"User");
 
+	if (SetupMode == 0)
+		UefiSecureBootProvisioned = TRUE;
+
 	UINT8 SecureBoot = 0;
 
 	Status = UefiSecureBootState(&SecureBoot);
@@ -87,95 +86,98 @@ InitializeSecurityPolicy(VOID)
 				     L"Secure Boot mode\n", SecureBoot == 1 ?
 							    L"" : L"not ");
 
-	if (SetupMode == 1 && SecureBoot == 1) {
-		EfiConsolePrintError(L"Platform firmware is in Setup mode but "
+	if (SecureBoot == 1)
+		UefiSecureBootEnabled = TRUE;
+
+	if (UefiSecureBootProvisioned == FALSE &&
+	    UefiSecureBootEnabled == TRUE)
+		EfiConsolePrintFault(L"Platform firmware is in Setup mode but "
 				     L"SecureBoot is enabled\n");
-		SecureBoot = 0;
-	}
 
 	BOOLEAN MokVerifyInstalled = FALSE;
 
 	Status = MokVerifyProtocolInstalled(&MokVerifyInstalled);
-	if (!EFI_ERROR(Status) && MokVerifyInstalled == TRUE) {
-		EfiConsolePrintDebug(L"MOK Verify Protocol is already "
-				     L"installed\n");
+	if (EFI_ERROR(Status))
+		EfiConsolePrintFault(L"Unable to know whether MOK Verify "
+				     L"Protocol is installed\n");
 
-		Status = MokVerifyProtocolHook();
-		if (EFI_ERROR(Status))
-			MokVerifyInstalled = FALSE;
-	}
-
-	/* Note 1 denotes MOK Secure Boot is disabled */
-	UINT8 MokSBState = 1;
-
-	Status = MokSecureBootState(&MokSBState);
-	if (!EFI_ERROR(Status)) {
-		EfiConsolePrintDebug(L"Shim loader is %soperating in "
-				     L"MOK Secure Boot mode\n", !MokSBState ?
-								L"" : L"not ");
-		/*
-		 * We need to distinguish the explicit disablement from
-		 * direct loading without shim.
-		 */
-		if (MokSBState == 1)
-			MokSBDisabledExplicitly = TRUE;
-	}
-
-	if (MokVerifyInstalled == FALSE && MokSBState == 0) {
-		EfiConsolePrintError(L"Shim loader is in MOK Secure Boot mode "
-				     L"but MOK Verify Protocol not "
-				     L"installed\n");
-		MokSBState = 1;
-	}
-
-	if (SetupMode == 0)
-		UefiSecureBootProvisioned = TRUE;
+	EfiConsolePrintDebug(L"MOK Verify Protocol is %sinstalled\n",
+			     MokVerifyInstalled == FALSE ? L"not " : L"");
 
 	if (MokVerifyInstalled == TRUE)
 		MokSecureBootProvisioned = TRUE;
 
-	BOOLEAN InstallMokVerify = FALSE;
+	/* MokSBState == 1 denotes MOK Secure Boot is disabled */
+	UINT8 MokSBState = 1;
 
-	if (UefiSecureBootProvisioned == TRUE && SecureBoot == 1) {
-		UefiSecureBootEnabled = TRUE;
+	Status = MokSecureBootState(&MokSBState);
+	if (EFI_ERROR(Status))
+		EfiConsolePrintFault(L"Unable to retrieve MokSBState\n");
 
+	/*
+	 * MokSBState == 2 is not a valid value according to MOK Secure
+	 * Boot spec. But we use it to indicate the situation where
+	 * MokSBState is undefined.
+	 */
+	if (!MokSBState || MokSBState == 2)
+		MokSecureBootEnabled = TRUE;
+
+	if (MokSecureBootProvisioned == TRUE && MokSecureBootEnabled == FALSE)
+		EfiConsolePrintFault(L"Shim loader is not in MOK Secure Boot "
+				     L"mode but MOK Verify Protocol installed"
+				     L"\n");
+	else if (MokSecureBootProvisioned == FALSE &&
+		 MokSecureBootEnabled == TRUE) {
+		/*
+		 * If boot manager boots up SELoader directly without shim,
+		 * this case will happen. For the case of MokSBState == 0,
+		 * it must be the case where fallback is used.
+		 */
+		if (MokSBState == 2) {
+			MokSecureBootUnavailable = TRUE;
+			MokSecureBootEnabled = FALSE;
+		}
+	}
+
+	if (MokSecureBootUnavailable == FALSE) {
+		if (MokSecureBootProvisioned == TRUE)
+			EfiConsolePrintDebug(L"Shim loader is %soperating in "
+					     L"MOK Secure Boot mode\n",
+					     MokSecureBootEnabled == TRUE ?
+					     L"" : L"not ");
+		else
+			EfiConsolePrintDebug(L"MOK Verify Protocol was "
+					     L"temporarily uninstalled\n");
+	} else
+		EfiConsolePrintDebug(L"Shim loader is not used\n");
+
+	if (UefiSecureBootEnabled == TRUE) {
+		/*
+		 * If MOK Secure Boot is disabled, we still need the hooks
+		 * to make sure the authentication check derived from UEFI
+		 * Secure Boot is ignored.
+		 */
 #ifdef EXPERIMENTAL_BUILD
 		SapHook();
 #endif
 		Sap2Hook();
 
-		if (MokSecureBootProvisioned == TRUE && MokSBState == 0) {
-			MokSecureBootEnabled = TRUE;
-			InstallMokVerify = TRUE;
-		} else if (MokSBDisabledExplicitly == TRUE) {
-			/*
-			 * Shim parser loads SELoader without authentication.
-			 * And SELoader will approve all loading requests
-			 * without involving UEFI Secure Boot.
-			 */
-			InstallMokVerify = TRUE;
-		}
-	}
+		if (MokSecureBootProvisioned == TRUE) {
+			Status = MokVerifyProtocolHook();
 
-	/*
-	 * Install MOK2 Verify Protocol as long as UEFI/MOK Secure Boot already
-	 * enabled.
-	 */
-	if (InstallMokVerify == TRUE) {
-		EfiConsolePrintDebug(L"Attempting to initialize MOK2 Verify "
-				     L"Protocol ...\n");
+			if (EFI_ERROR(Status))
+				EfiConsolePrintFault(L"Unable to hook MOK "
+						     L"Verify Protocol\n");
+		}
+
+		EfiConsolePrintDebug(L"Attempting to initialize MOK2 "
+				     L"Verify Protocol ...\n");
 
 		Status = Mok2VerifyInitialize();
-		if (EFI_ERROR(Status)) {
-			MokSecureBootEnabled = FALSE;
-			EfiConsolePrintError(L"Assuming MOK Secure Boot "
-					     L"disabled due to error on "
-					     L"installing MOK2 Verify "
-					     L"Protocol\n");
-		}
-	} else
-		EfiConsolePrintInfo(L"Ignore to install MOK2 Verify "
-				    L"Protocol\n");
+		if (EFI_ERROR(Status))
+			EfiConsolePrintFault(L"Unable to initialize MOK2 "
+					     L"Verify Protocol\n");
+	}
 
 	SecurityPolicyInitialized = TRUE;
 }
@@ -212,7 +214,8 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 						       &DataSize);
 		else
 			Ignored = TRUE;
-	} else if (!StrCmp(Name, L"MokListRT") || !StrCmp(Name, L"MokListXRT")) {
+	} else if (!StrCmp(Name, L"MokListRT") ||
+		   !StrCmp(Name, L"MokListXRT")) {
 		if (UefiSecureBootEnabled == TRUE &&
 		    MokSecureBootEnabled == TRUE)
 			Status = EfiVariableReadMok(Name, NULL,
@@ -228,7 +231,7 @@ EfiSecurityPolicyLoad(CONST CHAR16 *Name, EFI_SIGNATURE_LIST **SignatureList,
 
 	if (Ignored == TRUE) {
 		EfiConsolePrintDebug(L"Ignore loading the security policy "
-				     L"object %s ignored\n", Name);
+				     L"object %s\n", Name);
 		return EFI_SUCCESS;
 	}
 
@@ -273,17 +276,9 @@ EfiSecurityPolicySecureBootEnabled(VOID)
 	if (SecurityPolicyInitialized == FALSE)
 		InitializeSecurityPolicy();
 
-	BOOLEAN Result = FALSE;
-
-	if (UefiSecureBootEnabled == TRUE) {
-		if (MokSecureBootProvisioned == TRUE) {
-			if (MokSecureBootEnabled == TRUE)
-				Result = TRUE;
-		} else if (MokSBDisabledExplicitly == FALSE)
-			Result = TRUE;
-	}
-
-	return Result;
+	return UefiSecureBootEnabled == TRUE &&
+	       (MokSecureBootEnabled == TRUE ||
+		(MokSecureBootUnavailable == TRUE));
 }
 
 VOID

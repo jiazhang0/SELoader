@@ -156,17 +156,6 @@ MokSecureBootState(UINT8 *MokSBState)
 		return EFI_INVALID_PARAMETER;
 
 	EFI_STATUS Status;
-	BOOLEAN Installed = FALSE;
-
-	Status = MokVerifyProtocolInstalled(&Installed);
-	if (EFI_ERROR(Status))
-		return Status;
-
-	if (Installed == FALSE) {
-		*MokSBState = 1;
-		return EFI_SUCCESS;
-	}
-
 	UINT32 Attributes;
 	UINTN VarSize = sizeof(*MokSBState);
 
@@ -174,7 +163,7 @@ MokSecureBootState(UINT8 *MokSBState)
 				    (VOID **)&MokSBState, &VarSize);
 	if (EFI_ERROR(Status)) {
 		if (Status == EFI_NOT_FOUND) {
-			*MokSBState = 0;
+			*MokSBState = 2;
 
 			EfiConsolePrintDebug(L"Assuming MOK Secure Boot "
 					     L"enabled\n");
