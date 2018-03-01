@@ -108,26 +108,26 @@ InitializePkcs7(VOID)
 	if (!EFI_ERROR(Status)) {
 		EfiConsolePrintInfo(L"PKCS#7 Verify Protocol installed "
 				    L"by BIOS\n");
-		return EFI_SUCCESS;
-	}
+	} else {
 
-	EfiConsolePrintDebug(L"PKCS#7 Verify Protocol not supported by BIOS.\n"
-			     L"Attempting to load Pkcs7VerifyDxe driver "
-			     L"...\n");
+		EfiConsolePrintDebug(L"PKCS#7 Verify Protocol not supported by BIOS.\n"
+				     L"Attempting to load Pkcs7VerifyDxe driver "
+				     L"...\n");
 
-	Status = EfiImageExecuteDriver(L"Pkcs7VerifyDxe.efi");
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Unable to load Pkcs7VerifyDxe driver "
-				     L"(err: 0x%x)\n", Status);
-		return Status;
-	}
+		Status = EfiImageExecuteDriver(L"Pkcs7VerifyDxe.efi");
+		if (EFI_ERROR(Status)) {
+			EfiConsolePrintError(L"Unable to load Pkcs7VerifyDxe driver "
+					     L"(err: 0x%x)\n", Status);
+			return Status;
+		}
 
-	Status = EfiProtocolLocate(&gEfiPkcs7VerifyProtocolGuid,
-				   (VOID **)&Pkcs7VerifyProtocol);
-	if (EFI_ERROR(Status)) {
-		EfiConsolePrintError(L"Still unable to find PKCS#7 Verify "
-				     L"Protocol (err: 0x%x)\n", Status);
-		return Status;
+		Status = EfiProtocolLocate(&gEfiPkcs7VerifyProtocolGuid,
+					   (VOID **)&Pkcs7VerifyProtocol);
+		if (EFI_ERROR(Status)) {
+			EfiConsolePrintError(L"Still unable to find PKCS#7 Verify "
+					     L"Protocol (err: 0x%x)\n", Status);
+			return Status;
+		}
 	}
 
 	EFI_SIGNATURE_LIST *Db = NULL;
