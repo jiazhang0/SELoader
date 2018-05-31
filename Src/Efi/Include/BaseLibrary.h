@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Author:
- *        Lans Zhang <jia.zhang@windriver.com>
+ *       Jia Zhang <zhang.jia@linux.alibaba.com>
  */
 
 #ifndef BASE_LIBRARY_H

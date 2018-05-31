@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Author:
- *        Lans Zhang <jia.zhang@windriver.com>
+ *       Jia Zhang <zhang.jia@linux.alibaba.com>
  */
 
 #ifndef GNU_EFI_H
