@@ -67,11 +67,13 @@ UINTN
 StrLen(CONST CHAR16 *String);
 #endif
 
+#if GNU_EFI_VERSION < 308
 CHAR16 *
 StrnCpy(CHAR16 *Destination, CONST CHAR16 *Source, UINTN MaxLength);
 
 UINTN
 StrnLen(CONST CHAR16 *String, UINTN MaxLength);
+#endif
 
 CHAR16 *
 StrStr(CONST CHAR16 *String, CONST CHAR16 *SearchString);

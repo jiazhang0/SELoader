@@ -27,7 +27,7 @@ sbindir ?= $(prefix)/sbin
 includedir ?= $(prefix)/include
 
 gnuefi_libdir ?= $(libdir)
-GNU_EFI_VERSION ?= 305
+GNU_EFI_VERSION ?= 308
 
 LIB_GCC ?= $(shell $(CC) -print-libgcc-file-name)
 
