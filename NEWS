@@ -1,3 +1,16 @@
+Version 0.4.6
+=============
+Released: 2018-07-17
+
+- Fix compile errors with gnu-efi.
+- Initialize AllowedDB when PKCS7 protocol is provided by BIOS.
+- Rework SecurityPolicy.
+- Define EXPERIMENTAL_BUILD to exclude the experimental codes.
+- Update edk2 drivers.
+- Replace all sample keys.
+- Add .github/CODEOWNERS
+- Re-licensed under BSD 3-clause
+
 Version 0.4.5
 =============
 Released: 2017-05-09
