@@ -74,6 +74,21 @@ StrCpy(
 	IN CONST CHAR16 *Src
 );
 
+#if GNU_EFI_VERSION >= 308
+VOID
+StrnCpy(
+	IN CHAR16 *Dest,
+	IN CONST CHAR16 *Src,
+	IN UINTN Len
+);
+
+UINTN
+StrnLen (
+	IN CONST CHAR16 *s1,
+	IN UINTN Len
+);
+#endif
+
 EFI_FILE_INFO *
 LibFileInfo(
 	IN EFI_FILE_HANDLE FHand

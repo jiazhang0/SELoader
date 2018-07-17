@@ -40,7 +40,7 @@ LDFLAGS += -nostdlib -shared -Bsymbolic -L$(gnuefi_libdir) \
 	   -T $(EFI_LD_SCRIPT) $(gnuefi_libdir)/$(EFI_CRT0) \
 	   $(EXTRA_LDFLAGS)
 
-export CC AR CFLAGS LDFLAGS
+export CC AR CFLAGS LDFLAGS GNU_EFI_VERSION
 
 EFI_NAME := SELoader
 EFI_TARGET := $(EFI_NAME).efi

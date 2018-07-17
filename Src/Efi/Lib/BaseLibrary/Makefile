@@ -9,7 +9,6 @@ OBJS_$(LIB_NAME) := \
 	MemDup.o \
 	StrDup.o \
 	StrAppend.o \
-	StrnCpy.o \
 	StrCaseCmp.o \
 	StrChr.o \
 	StrnChr.o \
@@ -17,8 +16,10 @@ OBJS_$(LIB_NAME) := \
 	StrStr.o \
 	StrrStr.o \
 	StrEndsWith.o \
-	StrnLen.o \
 	StrStr.o
+
+OBJS_$(LIB_NAME) += $(shell if [ $(GNU_EFI_VERSION) -lt 308 ]; \
+	then echo "StrnCpy.o StrnLen.o"; fi;)
 
 all: $(LIB_TARGET) Makefile
 
